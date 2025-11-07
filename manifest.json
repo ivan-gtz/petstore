@@ -1,0 +1,17 @@
+{
+    "name": "Caneko",
+    "short_name": "Caneko",
+    "description": "Gestiona la información de tus mascotas.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#ffd166",
+    "icons": [
+      {
+        "src": "/vikey Mascotas. favicon.png",
+        "sizes": "any",
+        "type": "image/png"
+      }
+    ]
+}
+

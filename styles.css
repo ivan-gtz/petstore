@@ -1,0 +1,2216 @@
+/* Define CSS Variables for Theme */
+:root {
+    /* Light Theme Defaults */
+    --background-color: #f4f7f6;
+    --surface-color: #fff;
+    --text-color: #333;
+    --text-color-secondary: #555;
+    --text-color-light: #666;
+    --border-color: #eee;
+    --border-color-dashed: #ddd;
+    --shadow-color: rgba(0, 0, 0, 0.05);
+    --sidebar-bg: #222;
+    --sidebar-text: white;
+    --sidebar-hover-bg: #444;
+    --sidebar-hover-text: #eee;
+    --sidebar-icon: #ffd166; /* Accent color for icons */
+    --accent-color: #ffd166;
+    --button-save-bg: #4CAF50;
+    --button-save-hover-bg: #45a049;
+    --button-danger-bg: #dc3545;
+    --button-danger-hover-bg: #c82333;
+    --form-element-border: #ddd;
+    --form-element-focus-shadow: rgba(255, 209, 102, 0.3); /* Using accent color */
+    --card-bg: #f8f9fa;
+    --card-border: #dee2e6;
+    --success-color: #28a745;
+    --error-color: #dc3545;
+    --warning-color: orange;
+    --info-bg-warning: #fff3cd;
+    --info-border-warning: #ffeeba;
+    --info-bg-error: #f8d7da;
+    --info-border-error: #f5c6cb;
+    --lost-status-color: #dc3545;
+    --lost-status-bg: #f8d7da;
+    --lost-status-border: #dc3545;
+    --whatsapp-button-bg: #25D366;
+    --location-button-bg: #4285F4;
+    --toggle-bg-off: #e9ecef; /* For generic toggles like 'Lost' */
+    --toggle-bg-on: #4CAF50; /* Example green for active toggle */
+    --toggle-circle: #555; /* Circle color for toggles */
+    --limit-reached-color: var(--error-color);
+    --limit-remaining-color: var(--success-color);
+    --placeholder-color: #999; /* Default placeholder color */
+    --password-toggle-color: var(--text-color-secondary); /* Color for the eye icon */
+}
+
+/* Dark Theme Overrides */
+body.dark-theme {
+    --background-color: #1a1a1a;
+    --surface-color: #2c2c2c;
+    --text-color: #eee;
+    --text-color-secondary: #bbb;
+    --text-color-light: #ccc;
+    --border-color: #444;
+    --border-color-dashed: #555;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --sidebar-bg: #111;
+    --sidebar-text: #ccc;
+    --sidebar-hover-bg: #333;
+    --sidebar-hover-text: white;
+    /* --sidebar-icon: #ffd166; Keep accent color */
+    /* --accent-color: #ffd166; Keep accent color */
+    --button-save-bg: #368a3b;
+    --button-save-hover-bg: #2f7833;
+    --button-danger-bg: #b02a37;
+    --button-danger-hover-bg: #9a232f;
+    --form-element-border: #555;
+    --form-element-focus-shadow: rgba(255, 209, 102, 0.3); /* Using accent color */
+    --card-bg: #3a3a3a;
+    --card-border: #444;
+    --success-color: #228b38;
+    --error-color: #a72a33;
+    --warning-color: orange;
+     --placeholder-color: #777; /* Darker placeholder color for dark mode */
+     --password-toggle-color: #bbb; /* Lighter color for the eye icon */
+}
+
+/* Apply Variables to General Styles */
+body {
+    font-family: 'Noto Sans', system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.page-wrapper {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.sidebar {
+    width: 240px;
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    transition: width 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+.sidebar nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar nav li {
+    margin-bottom: 5px;
+}
+
+/* Admin only menu items are hidden by default */
+.sidebar nav li.admin-only {
+    display: none;
+}
+
+.sidebar nav a {
+    display: flex;
+    align-items: center;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    padding: 14px 20px;
+    transition: background-color 0.2s ease, padding 0.3s ease, color 0.2s ease;
+    font-size: 1rem;
+    border-radius: 0 25px 25px 0;
+    margin-right: 10px;
+}
+
+.sidebar nav a:hover {
+    background-color: var(--sidebar-hover-bg);
+    color: var(--sidebar-hover-text);
+}
+
+/* Pet-themed sidebar icons and playful menu badges */
+.sidebar nav a .menu-text::before {
+    content: "";
+    display: inline-block;
+    margin-right: 8px;
+    transform-origin: center;
+    transition: transform 0.25s ease;
+}
+/* Assign animal emoji per section for a friendly look */
+.sidebar nav a[data-target="panel-section"] .menu-text::before { content: "🐾"; }
+.sidebar nav a[data-target="pets-section"] .menu-text::before { content: "🐶"; }
+.sidebar nav a[data-target="clients-section"] .menu-text::before { content: "🐕"; }
+.sidebar nav a[data-target="gallery-section"] .menu-text::before { content: "📸"; }
+.sidebar nav a[data-target="docs-section"] .menu-text::before { content: "📄"; }
+.sidebar nav a[data-target="users-section"] .menu-text::before { content: "🐩"; }
+.sidebar nav a[data-target="settings-section"] .menu-text::before { content: "⚙️"; }
+
+.menu-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 15px;
+    color: var(--sidebar-icon); /* Keep accent color */
+    transition: margin-right 0.3s ease, color 0.3s ease;
+    transition: transform 220ms cubic-bezier(.2,.9,.3,1), filter 200ms;
+}
+
+.sidebar nav a:hover .menu-icon {
+    transform: translateY(-4px) rotate(-6deg) scale(1.02);
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.08));
+}
+
+.sidebar nav a.active .menu-icon,
+.sidebar nav a:active .menu-icon {
+    animation: menu-wiggle 650ms ease;
+}
+@keyframes menu-wiggle {
+    0% { transform: rotate(0deg); }
+    30% { transform: rotate(-8deg); }
+    60% { transform: rotate(6deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.menu-text {
+    flex-grow: 1;
+    transition: opacity 0.3s ease;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    transition: margin-left 0.3s ease;
+}
+
+.container {
+    max-width: 900px;
+    margin: 2em auto;
+    padding: 20px;
+    background: var(--surface-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.content-section {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+}
+
+h1 {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+#panel-section > h1 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 1rem;
+}
+
+#panel-section > h1 a {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+#panel-section > h1 a:hover {
+    color: var(--accent-color);
+    text-decoration: underline;
+}
+
+#panel-section > h1 a.link-disabled {
+    color: var(--text-color-secondary);
+    cursor: default;
+    text-decoration: none;
+    pointer-events: none;
+}
+
+#panel-section > h1 a.link-disabled:hover {
+    color: var(--text-color-secondary);
+    text-decoration: none;
+}
+
+.header-logo {
+    height: 1.2em;
+    vertical-align: middle;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+h2 {
+    margin-top: 20px;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    color: var(--text-color);
+    border-bottom: 1px dashed var(--border-color-dashed);
+    padding-bottom: 5px;
+    width: 100%;
+    transition: color 0.3s ease, border-bottom-color 0.3s ease;
+}
+
+h3 {
+    margin-top: 20px;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    border-bottom: 1px dashed var(--border-color-dashed);
+    padding-bottom: 5px;
+    width: 100%;
+    transition: color 0.3s ease, border-bottom-color 0.3s ease;
+}
+
+/* --- Login Form Specific Styles --- */
+#login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: radial-gradient(600px 300px at 10% 15%, rgba(255,209,102,0.10), transparent 12%),
+                radial-gradient(500px 240px at 90% 85%, rgba(255,138,128,0.06), transparent 10%);
+    perspective: 1100px; /* enable 3D parallax perspective */
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.login-container {
+    background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,250,240,0.96));
+    padding: 44px 34px;
+    border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,209,102,0.18);
+    position: relative;
+    overflow: visible;
+}
+
+.login-container h1 {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color); /* Use variable */
+    margin-bottom: 10px;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.login-container p {
+    text-align: center;
+    color: var(--text-color-secondary); /* Use variable */
+    margin-bottom: 30px;
+    font-size: 1rem;
+}
+
+#login-form .form-group {
+    margin-bottom: 20px;
+}
+
+/* New container for password input and toggle */
+.password-input-container {
+    position: relative; /* To position the toggle button */
+    width: 100%; /* Take full width of its container */
+    box-sizing: border-box; /* Include padding/border in width */
+}
+
+#login-form input[type="text"],
+#login-form input[type="password"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--form-element-border);
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--text-color);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+    /* Add padding to the right to make space for the icon */
+    padding-right: 40px; /* Adjust as needed */
+}
+
+#login-form input[type="text"]:focus,
+#login-form input[type="password"]:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 5px var(--form-element-focus-shadow);
+    outline: none;
+}
+
+#login-form label {
+    display: block;
+    text-align: left;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    font-size: 0.95rem;
+}
+
+/* Style for the password toggle button */
+.password-toggle-button {
+    position: absolute;
+    top: 50%; /* Vertically center */
+    right: 10px; /* Position from the right */
+    transform: translateY(-50%); /* Fine-tune vertical centering */
+    background: rgba(0,0,0,0.05);
+    border: none;
+    cursor: pointer;
+    padding: 6px; /* Add some clickable area */
+    z-index: 2; /* Ensure it's above the input */
+    color: var(--accent-color);
+    border-radius: 8px;
+}
+
+.password-toggle-button:hover {
+    color: var(--text-color); /* Darker color on hover */
+}
+
+.password-toggle-button .eye-icon {
+    width: 20px; /* Adjust size as needed */
+    height: 20px;
+    display: block; /* Ensure it's a block element */
+}
+
+/* Hide one icon by default (show open eye, hide closed eye) */
+.password-toggle-button #eye-closed {
+    display: none;
+}
+
+#login-error-msg {
+    color: var(--error-color);
+    font-size: 0.9rem;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+#login-form .save-btn {
+    width: 100%;
+    padding: 12px 25px;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-top: 10px;
+    background: linear-gradient(90deg, #ffd166 0%, #ffb86b 100%);
+    color: #222;
+    box-shadow: 0 10px 30px rgba(255,177,80,0.12);
+    transition: box-shadow 200ms ease, transform 120ms ease;
+    border: none;
+}
+
+#login-form .save-btn:hover {
+    box-shadow: 0 18px 40px rgba(255,177,80,0.18), 0 6px 18px rgba(255,209,102,0.06);
+    transform: scale(1.01);
+}
+
+#login-form .save-btn:active {
+    transform: translateY(0);
+}
+
+#admin-info {
+    margin-top: 30px;
+    font-size: 0.85rem;
+    color: var(--text-color-light);
+    background-color: var(--card-bg);
+    border: 1px dashed var(--border-color-dashed);
+    padding: 15px;
+    border-radius: 8px;
+    text-align: left;
+}
+
+#admin-info p {
+    margin: 5px 0;
+    padding: 0;
+    text-align: left;
+    font-size: 0.85rem;
+}
+
+#admin-info code {
+    background-color: #e9ecef;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+}
+
+/* --- Layout Structure --- */
+#gallery-section, #docs-section, #settings-section, #users-section, #clients-section, #control-section {
+    padding: 20px;
+    background: var(--surface-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    max-width: 900px;
+    margin: 2em auto;
+}
+
+#gallery-section h1, #docs-section h1, #settings-section h1, #users-section h1, #clients-section h1, #control-section h1 {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+#gallery-upload, #docs-upload {
+    display: block;
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid var(--form-element-border);
+    border-radius: 4px;
+    background-color: var(--card-bg);
+}
+
+.gallery-upload-wrapper {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 12px;
+}
+/* styled pill buttons for gallery upload & clear */
+.gallery-upload-btn {
+    background: var(--accent-color);
+    color: #222;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transition: transform 220ms ease, box-shadow 220ms ease, background 160ms ease;
+    font-weight: 700;
+}
+.gallery-upload-btn.clear-btn {
+    background: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--form-element-border);
+}
+.gallery-upload-btn:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0,0,0,0.12); background: #ffc34d; }
+/* hide original file input (we use label as trigger) */
+#gallery-upload { display: none; }
+
+#gallery-previews {
+    margin-top: 20px;
+    border-top: 1px dashed var(--border-color-dashed);
+    padding-top: 15px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    padding: 12px 0;
+}
+
+#gallery-previews .gallery-item {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+}
+#gallery-previews .gallery-item img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    display: block;
+    transition: transform 220ms ease, filter 220ms ease;
+}
+#gallery-previews .gallery-item:hover img {
+    transform: scale(1.08) rotate(-1deg) translateY(-6px);
+    filter: saturate(1.08) contrast(1.02);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+#gallery-previews .gallery-item .meta {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 8px 10px;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 100%);
+    color: #fff;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: center;
+    box-sizing: border-box;
+}
+#gallery-previews .gallery-item .meta .name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 66%;
+}
+#gallery-previews .gallery-item .meta .size {
+    opacity: 0.9;
+    font-size: 0.82rem;
+}
+#gallery-previews .gallery-item .delete-btn {
+    background: rgba(220,53,69,0.95);
+    color: white;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    transition: background-color 150ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+#gallery-previews .gallery-item .delete-btn:hover {
+    background: rgba(220,53,69,1);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+}
+
+#docs-list {
+    margin-top: 20px;
+    border-top: 1px dashed var(--border-color-dashed);
+    padding-top: 15px;
+}
+
+#docs-list div {
+    padding: 10px;
+    background-color: var(--card-bg);
+    border-left: 4px solid var(--accent-color);
+    margin-bottom: 10px;
+    border-radius: 4px;
+    color: var(--text-color);
+    word-break: break-all;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#docs-list div a {
+    flex-grow: 1;
+    margin-right: 10px;
+    text-decoration: none;
+    color: inherit;
+    word-break: break-word;
+}
+
+#docs-section .docs-upload-area {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
+    border: 1px dashed var(--border-color-dashed);
+    cursor: pointer;
+    transition: transform 220ms ease, box-shadow 220ms ease, border-color 160ms ease;
+    text-align: center;
+}
+#docs-section .docs-upload-area:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); border-color: var(--accent-color); }
+#docs-section .doc-upload-icon { color: var(--accent-color); filter: drop-shadow(0 6px 12px rgba(0,0,0,0.06)); }
+.docs-list .doc-card {
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:12px; margin:10px 0; border-radius:10px; background:var(--card-bg); border:1px solid var(--card-border);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.04); transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.docs-list .doc-card:hover { transform: translateY(-6px); box-shadow: 0 18px 36px rgba(0,0,0,0.08); }
+.docs-list .doc-left { display:flex; align-items:center; gap:12px; flex:1; min-width:0; }
+.docs-list .doc-left .doc-icon { font-size:1.5rem; color:var(--accent-color); }
+.docs-list .doc-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; color:var(--text-color); }
+.docs-list .doc-actions { display:flex; gap:8px; flex-shrink:0; }
+
+/* --- Forms in Sections (Settings, Users) --- */
+#settings-form, .simple-form, #admin-settings-form {
+    max-width: 400px;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Add spacing below admin settings group */
+#admin-settings {
+    margin-bottom: 30px; /* Add space between admin settings and contact */
+}
+
+/* Style for the new contact group */
+#admin-contact-settings.settings-group {
+    margin-top: 30px; /* Space above contact group */
+    padding-top: 20px;
+    border-top: 1px dashed var(--border-color-dashed);
+}
+
+#admin-contact-settings h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+#admin-contact-settings p {
+    text-align: center;
+    margin-bottom: 15px;
+    color: var(--text-color-secondary);
+}
+
+/* --- Users Section Specific Styles --- */
+#user-list {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px dashed var(--border-color-dashed);
+}
+
+.user-entry {
+    display: grid;
+    grid-template-columns: 72px 1fr 140px;
+    gap: 16px;
+    align-items: start;
+    background: linear-gradient(180deg, var(--card-bg), rgba(255,255,255,0.02));
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 160ms ease;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+}
+
+.user-entry:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 42px rgba(0,0,0,0.10);
+    border-color: rgba(0,0,0,0.06);
+}
+
+/* Avatar inside user entry */
+.user-avatar {
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.user-avatar .avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid var(--accent-color);
+    background: linear-gradient(180deg, #fff, #f6f2e8);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+/* User info column */
+.user-info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    justify-content: center;
+}
+.user-info p { margin: 0; color: var(--text-color-secondary); font-size: 0.95rem; }
+.user-info p strong { color: var(--text-color); font-weight: 600; margin-right: 6px; }
+
+/* Status pill */
+.user-status-indicator {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    margin-left: 8px;
+    background: rgba(0,0,0,0.04);
+}
+
+/* Pet link styling */
+.user-pet-preview .link-button {
+    color: var(--accent-color);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* Buttons column (right side) */
+.user-buttons {
+    width: 100%;
+    max-width: 160px;
+    align-items: flex-end;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.user-buttons button {
+    min-width: 110px;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 0.87rem;
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+.user-buttons button:hover { transform: translateY(-3px); }
+
+/* Specific button variants */
+.user-entry button.delete-user-btn {
+    background: linear-gradient(180deg, rgba(220,53,69,0.95), rgba(200,40,60,0.95));
+    color: white;
+    border: none;
+    box-shadow: 0 10px 22px rgba(220,53,69,0.12);
+}
+.user-entry button.toggle-user-status-btn.activate-btn {
+    background: linear-gradient(180deg, var(--button-save-bg), var(--button-save-hover-bg));
+    color: white;
+    border: none;
+}
+.user-entry button.toggle-user-status-btn.deactivate-btn {
+    background: linear-gradient(180deg, var(--warning-color), #ff9800);
+    color: white;
+    border: none;
+}
+.user-entry button.edit-user-password-btn {
+    background: linear-gradient(180deg, var(--sidebar-icon), #ffca66);
+    color: #222;
+    border: none;
+}
+
+.user-entry span {
+    flex-grow: 1;
+    margin-right: 10px;
+    word-break: break-word;
+}
+
+.user-entry button.delete-user-btn:hover {
+    background-color: var(--button-danger-hover-bg);
+    transform: translateY(-1px);
+}
+
+.user-entry button.delete-user-btn:active {
+    transform: translateY(0);
+}
+
+.user-entry button.toggle-user-status-btn:hover {
+    transform: translateY(-1px);
+}
+.user-entry button.toggle-user-status-btn:active {
+    transform: translateY(0);
+}
+
+.user-entry button.activate-btn {
+    background-color: var(--button-save-bg);
+    color: white;
+}
+
+.user-entry button.activate-btn:hover {
+    background-color: var(--button-save-hover-bg);
+}
+
+.user-entry button.deactivate-btn {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.user-entry button.deactivate-btn:hover {
+     background-color: orange; /* Slightly darker orange */
+}
+
+.user-entry button.edit-user-password-btn:hover {
+     background-color: #ffc34d; /* Slightly darker accent */
+     transform: translateY(-1px);
+}
+
+.user-entry button.edit-user-password-btn:active {
+     transform: translateY(0);
+}
+
+.user-entry-clickable {
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+}
+
+.user-entry-clickable:hover {
+    background-color: #f1f1f1;
+}
+
+body.dark-theme .user-entry-clickable:hover {
+     background-color: #4a4a4a;
+}
+
+/* --- Pet Profile & Form (Pets Section) --- */
+.pet-profile {
+    background: var(--surface-color);
+    border: none;
+    border-radius: 8px;
+    padding: 30px;
+    max-width: 600px;
+    margin: auto;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pet-profile h2 {
+    margin-top: 20px;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    color: var(--text-color);
+    border-bottom: 1px dashed var(--border-color-dashed);
+    padding-bottom: 5px;
+    width: 100%;
+}
+
+.avatar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+    border: 3px solid var(--accent-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.avatar img, .avatar svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 300ms ease, box-shadow 300ms ease;
+}
+
+.avatar:hover img, .avatar:hover svg {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.upload-btn {
+    background-color: var(--accent-color);
+    color: #222;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.upload-btn:hover {
+    background-color: #ffc34d;
+    transform: translateY(-1px);
+}
+
+.upload-btn:active {
+    transform: translateY(0);
+}
+
+.pet-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--text-color-secondary);
+    font-size: 0.95rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group textarea,
+.form-group select,
+.form-group input[type="date"],
+.form-group input[type="tel"] {
+    padding: 12px 15px;
+    border: 1px solid var(--form-element-border);
+    border-radius: 6px;
+    font-size: 1rem;
+    color: var(--text-color);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: var(--surface-color); /* Ensure background updates with theme */
+}
+
+/* Styles for Placeholder Text */
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: var(--placeholder-color);
+    opacity: 1; /* Ensure opacity is 1 */
+}
+.form-group input::-webkit-input-placeholder,
+.form-group textarea::-webkit-input-placeholder {
+    color: var(--placeholder-color);
+}
+.form-group input::-moz-placeholder,
+.form-group textarea::-moz-placeholder {
+    color: var(--placeholder-color);
+    opacity: 1; /* Firefox requires opacity */
+}
+.form-group input:-ms-input-placeholder,
+.form-group textarea:-ms-input-placeholder {
+    color: var(--placeholder-color);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.save-btn {
+    background-color: var(--button-save-bg);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    align-self: center;
+    margin-top: 20px;
+    box-shadow: 0 18px 40px rgba(34,34,34,0.08), 0 6px 18px rgba(255,209,102,0.06);
+    transition: transform 220ms cubic-bezier(.2,.9,.3,1), box-shadow 220ms ease;
+}
+
+.save-btn:hover {
+    background-color: var(--button-save-hover-bg);
+    transform: scale(1.01);
+    box-shadow: 0 28px 60px rgba(34,34,34,0.08), 0 10px 30px rgba(255,209,102,0.08);
+}
+
+.save-btn:active {
+    transform: translateY(0);
+}
+
+.danger-btn {
+    background-color: var(--button-danger-bg);
+}
+
+.danger-btn:hover {
+    background-color: var(--button-danger-hover-bg);
+}
+
+/* --- Panel Section Specific Styles --- */
+.panel-pet-display {
+    display: flex;
+    align-items: flex-start;
+    background: var(--surface-color);
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    max-width: 600px;
+    margin: auto;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.panel-pet-display::before {
+    content: "🐾";
+    position: absolute;
+    right: 18px;
+    top: 10px;
+    font-size: 80px;
+    opacity: 0.06;
+    transform: rotate(-15deg);
+    pointer-events: none;
+    transition: transform 360ms ease, box-shadow 360ms ease;
+}
+
+.panel-pet-display::after {
+    content: "🐾🐶";
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    font-size: 48px;
+    opacity: 0.06;
+    transform: rotate(-12deg);
+    pointer-events: none;
+}
+
+.panel-avatar-container {
+    flex-shrink: 0;
+    width: 120px;
+    display: flex;
+    justify-content: center;
+}
+
+.panel-avatar-container .avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid var(--accent-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.panel-avatar-container .avatar:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 18px 30px rgba(0,0,0,0.12);
+}
+
+.panel-info {
+    flex-grow: 1;
+    min-width: 200px;
+    text-align: center;
+    padding: 6px 10px;
+}
+
+.panel-info h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--text-color);
+    font-size: 1.5rem;
+    border-bottom: 1px dashed var(--border-color-dashed);
+    padding-bottom: 10px;
+    letter-spacing: 0.2px;
+}
+
+.panel-info p {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: var(--text-color-secondary);
+    line-height: 1.5;
+    text-align: center;
+}
+
+.panel-info p strong {
+    color: var(--text-color);
+}
+
+.panel-info p a.panel-button {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: normal;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.panel-info p a.panel-button:hover {
+    opacity: 0.9;
+    text-decoration: none;
+}
+
+.panel-info p a.whatsapp-button {
+    background-color: var(--whatsapp-button-bg);
+    color: white;
+}
+
+.panel-info p a.location-button {
+    background-color: var(--location-button-bg);
+    color: white;
+}
+
+.panel-info p.lost-status {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--lost-status-color);
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 2px solid var(--lost-status-border);
+    border-radius: 8px;
+    background-color: var(--lost-status-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: lost-pulse 1.6s infinite;
+}
+
+@keyframes lost-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(220,53,69,0.12); transform: translateY(0); }
+    50% { box-shadow: 0 8px 20px rgba(220,53,69,0.18); transform: translateY(-3px); }
+    100% { box-shadow: 0 0 0 0 rgba(220,53,69,0.12); transform: translateY(0); }
+}
+
+#panel-no-data {
+    text-align: center;
+    color: var(--text-color-secondary);
+    width: 100%;
+    padding: 30px;
+}
+
+/* --- Modal Styles --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    padding-top: 60px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.9);
+    animation: modal-backdrop 260ms ease forwards;
+}
+
+@keyframes modal-backdrop {
+    from { background: rgba(0,0,0,0); }
+    to { background: rgba(0,0,0,0.9); }
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 85%;
+    object-fit: contain;
+    animation: modal-zoom 420ms cubic-bezier(.2,.9,.3,1);
+}
+
+@keyframes modal-zoom {
+    0% { transform: scale(.96); opacity:0 }
+    100% { transform: scale(1); opacity:1 }
+}
+
+.modal-document-content {
+    margin: auto;
+    display: none;
+    width: 80%;
+    max-width: 600px;
+    background-color: var(--surface-color);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    color: var(--text-color);
+    text-align: center;
+}
+
+#caption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+    height: 150px;
+}
+
+.modal-content, #caption, .modal-document-content {
+    animation-name: zoom;
+    animation-duration: 0.6s;
+}
+
+@keyframes zoom {
+    from {transform: scale(0)}
+    to {transform: scale(1)}
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+    z-index: 1001;
+}
+
+.close:hover,
+.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Confirm modal: backdrop fade + box entrance */
+.confirm-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.55);
+    z-index: 1100;
+    animation: confirm-backdrop 260ms ease forwards;
+}
+
+@keyframes confirm-backdrop {
+    from { background: rgba(0,0,0,0); }
+    to { background: rgba(0,0,0,0.55); }
+}
+
+/* Confirm box: brighter background, accent border and entrance */
+.confirm-box {
+    width: 90%;
+    max-width: 420px;
+    background: linear-gradient(180deg, rgba(255,249,236,1), var(--surface-color));
+    color: var(--text-color);
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+    text-align: center;
+    border: 1px solid var(--card-border);
+    transform-origin: center;
+    animation: confirm-entrance 360ms cubic-bezier(.2,.9,.3,1) both;
+    position: relative;
+    overflow: hidden;
+}
+
+@keyframes confirm-entrance {
+    0% { opacity: 0; transform: translateY(12px) scale(.98); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Icon and title layout inside confirm */
+.confirm-title {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    font-weight:700;
+}
+
+.confirm-icon {
+    width:44px;
+    height:44px;
+    display:inline-grid;
+    place-items:center;
+    border-radius:999px;
+    background:rgba(255,255,255,0.9);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.10);
+    font-size:20px;
+    color:var(--button-danger-bg);
+}
+
+/* Buttons: animate and emphasize danger */
+.confirm-actions {
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    margin-top:6px;
+}
+
+.confirm-actions .save-btn {
+    border-radius:10px;
+    padding:10px 14px;
+}
+
+.confirm-actions .danger-btn {
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.confirm-actions .danger-btn:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 12px 28px rgba(220,53,69,0.20);
+}
+
+/* --- Lost Status Toggle (Pets Section) --- */
+.form-group.lost-status-group {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--border-color-dashed);
+}
+
+.form-group.lost-status-group label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 15px;
+}
+
+.lost-toggle-container {
+    display: flex;
+    justify-content: center;
+}
+
+.lost-toggle-label {
+    display: inline-block;
+    padding: 12px 25px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.2s ease;
+    user-select: none;
+    text-align: center;
+    min-width: 200px;
+    box-sizing: border-box;
+    background-color: var(--toggle-bg-off);
+    color: var(--text-color-secondary);
+    border: 1px solid var(--toggle-circle);
+}
+
+.lost-toggle-label .toggle-off,
+.lost-toggle-label .toggle-on {
+    display: inline-block;
+}
+
+.lost-toggle-label .toggle-on {
+    display: none;
+}
+
+#pet-lost:checked + .lost-toggle-label {
+    background-color: var(--lost-status-color);
+    color: white;
+    box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+}
+
+#pet-lost:checked + .lost-toggle-label .toggle-off {
+    display: none;
+}
+
+#pet-lost:checked + .lost-toggle-label .toggle-on {
+    display: inline-block;
+    font-weight: 700;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* --- Generic Content Section Styles (Gallery, Docs, Settings, Users) --- */
+
+/* --- Clients Section Specific Styles --- */
+#clients-section {
+    padding: 20px;
+    background: var(--surface-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    max-width: 900px; 
+    margin: 2em auto;
+}
+
+#clients-section h1 {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+}
+
+#clients-section h2 { 
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: var(--text-color);
+    border-bottom: 1px dashed var(--border-color-dashed);
+    padding-bottom: 10px;
+}
+
+/* Filter Controls */
+.filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed var(--border-color-dashed);
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+}
+
+.users-filter-controls {
+    margin-top: 20px; /* Add some space above user filters */
+}
+
+.filter-controls span {
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.filter-controls .filter-button {
+    padding: 8px 15px;
+    border: 1px solid var(--form-element-border);
+    border-radius: 6px;
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.filter-controls .filter-button:hover {
+    background-color: var(--card-bg);
+    border-color: var(--accent-color);
+}
+
+.filter-controls .filter-button.active {
+    background-color: var(--accent-color);
+    color: #222; /* Dark text for accent color */
+    border-color: var(--accent-color);
+    font-weight: 500;
+}
+
+.filter-controls .filter-button.active:hover {
+     background-color: #ffc34d; /* Slightly darker accent */
+}
+
+.pet-card-container {
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+    gap: 20px; 
+    margin-top: 0; /* Adjust margin since filter controls add space */
+    padding-top: 0; /* Adjust padding */
+    border-top: none; /* Remove border since filter controls have one */
+}
+
+.pet-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 15px;
+    display: flex; 
+    align-items: center;
+    gap: 15px; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    text-decoration: none; 
+    color: inherit; 
+    position: relative;
+    overflow: visible;
+}
+
+.pet-card::before {
+    content: "🐾";
+    font-size: 3rem;
+    opacity: 0.06;
+    position: absolute;
+    right: 14px;
+    top: 8px;
+    transform: rotate(-18deg);
+    pointer-events: none;
+    transition: transform 280ms ease, opacity 280ms ease;
+}
+
+.pet-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+}
+
+.pet-card-avatar {
+    flex-shrink: 0; 
+    width: 60px;
+    height: 60px;
+}
+
+.pet-card-avatar .avatar {
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--accent-color); 
+}
+
+.pet-card-info {
+    flex-grow: 1; 
+    min-width: 0; 
+}
+
+.pet-card-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    border-bottom: none; /* Remove dashed border from card title */
+    padding-bottom: 0;
+    font-weight: 600;
+}
+
+.pet-card-info p {
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
+    color: var(--text-color-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pet-card-info p strong {
+    color: var(--text-color);
+}
+
+.pet-card-info a.panel-button.small {
+    padding: 2px 5px;
+    font-size: 0.75rem;
+    margin-left: 5px;
+    border-radius: 3px;
+    vertical-align: middle;
+}
+
+.pet-card.lost {
+    border-left: 5px solid var(--lost-status-color); 
+}
+
+.pet-card.lost .pet-card-info h3 {
+    color: var(--lost-status-color); 
+}
+
+.pet-card.lost {
+    animation: lost-card-beat 1.6s infinite;
+}
+
+@keyframes lost-card-beat {
+    0% { transform: translateY(0) scale(1); box-shadow: 0 6px 18px rgba(220,53,69,0.06); }
+    40% { transform: translateY(-4px) scale(1.01); box-shadow: 0 18px 36px rgba(220,53,69,0.12); }
+    100% { transform: translateY(0) scale(1); box-shadow: 0 6px 18px rgba(220,53,69,0.06); }
+}
+
+.modal-document-content .pet-card {
+    background-color: var(--card-bg); 
+    border: 1px solid var(--card-border); 
+    border-radius: 8px;
+    padding: 20px; 
+    display: flex;
+    flex-direction: column; 
+    align-items: center; 
+    gap: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: none; 
+    width: 100%; 
+    max-width: 350px; 
+}
+
+.modal-document-content .pet-card::before {
+    content: "🐾";
+    font-size: 3rem;
+    opacity: 0.06;
+    position: absolute;
+    right: 14px;
+    top: 8px;
+    transform: rotate(-18deg);
+    pointer-events: none;
+    transition: transform 280ms ease, opacity 280ms ease;
+}
+
+.modal-document-content .pet-card:hover {
+    transform: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.modal-document-content .pet-card-avatar {
+    flex-shrink: 0;
+    width: 100px; 
+    height: 100px;
+}
+
+.modal-document-content .pet-card-avatar .avatar {
+    width: 100%;
+    height: 100%;
+    border: 3px solid var(--accent-color); 
+}
+
+.modal-document-content .pet-card-info {
+    flex-grow: 0; 
+    min-width: 0;
+    width: 100%; 
+    text-align: center; 
+}
+
+.modal-document-content .pet-card-info h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    white-space: normal; 
+    overflow: visible;
+    text-overflow: clip;
+}
+
+.modal-document-content .pet-card-info p {
+    margin: 0 0 5px 0;
+    font-size: 1rem;
+    color: var(--text-color-secondary);
+    white-space: normal; 
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.4;
+}
+
+.modal-document-content .pet-card-info p strong {
+    color: var(--text-color);
+}
+
+.error-message {
+    color: var(--error-color);
+    font-size: 0.9rem;
+    margin-top: 10px;
+    margin-bottom: 0;
+    text-align: left;
+}
+
+.success-message {
+    color: var(--success-color);
+    font-size: 0.9rem;
+    margin-top: 10px;
+    margin-bottom: 0;
+    text-align: left;
+}
+
+/* Decorative paw prints and pet-icon styles for shared card and modal pet card */
+.panel-pet-display::after {
+    content: "🐾🐶";
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    font-size: 48px;
+    opacity: 0.06;
+    transform: rotate(-12deg);
+    pointer-events: none;
+}
+
+.modal-document-content .pet-card::after {
+    content: "🐾";
+    position: absolute;
+    left: 12px;
+    top: 8px;
+    font-size: 36px;
+    opacity: 0.05;
+    transform: rotate(-18deg);
+    pointer-events: none;
+}
+
+/* Small inline icon used next to labels */
+.pet-icon {
+    display: inline-block;
+    margin-right: 8px;
+    font-size: 1.05em;
+    vertical-align: -0.12em;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.04));
+}
+
+/* Add a gentle bounce to important icons (lost state already pulses) */
+.pet-icon.animated {
+    animation: pet-icon-bounce 900ms ease-in-out infinite;
+}
+@keyframes pet-icon-bounce {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+    100% { transform: translateY(0); }
+}
+
+/* Floating 3D icons used in shared 'tarjeta' view */
+.floating-3d-icons {
+    position: absolute;
+    top: 6%;
+    right: 6%;
+    width: 220px;
+    height: 220px;
+    pointer-events: none;
+    transform-style: preserve-3d;
+    perspective: 800px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    z-index: 5;
+    opacity: 0.98;
+}
+@media (max-width: 768px) {
+    .floating-3d-icons {
+        top: 2%;
+        right: 4%;
+        width: 160px;
+        height: 160px;
+    }
+}
+
+.floating-3d-icon {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-color);
+    filter: drop-shadow(0 10px 18px rgba(0,0,0,0.18));
+    transform-origin: center;
+    transform-style: preserve-3d;
+    transition: transform 300ms ease;
+    will-change: transform;
+    --float-distance: 8px;
+    --spin-duration: 6500ms;
+    position: relative;
+    opacity: 0.95;
+    animation: float-3d calc(4.4s) ease-in-out infinite;
+    animation-delay: var(--delay, 0);
+}
+
+/* Slight size / color variations for diversity */
+.floating-3d-icon.icon-paw { color: #ffd166; transform: translateZ(28px) rotateY(-8deg) rotateX(4deg); }
+.floating-3d-icon.icon-bone { color: #ffb86b; transform: translateZ(18px) rotateY(12deg) rotateX(-6deg); }
+.floating-3d-icon.icon-heart { color: #ff6b6b; transform: translateZ(8px) rotateY(-4deg) rotateX(8deg); }
+/* replaced fish with dog styling */
+.floating-3d-icon.icon-dog { color: #ffb86b; transform: translateZ(10px) rotateY(6deg); }
+.floating-3d-icon.icon-cat { color: #ffd7a6; transform: translateZ(8px) rotateY(-3deg); }
+
+/* SVG sizing */
+.floating-3d-icon svg {
+    width: 56px;
+    height: 56px;
+    display: block;
+    transition: transform 420ms cubic-bezier(.2,.9,.3,1);
+    transform-origin: center;
+    backface-visibility: hidden;
+}
+
+/* Hover-like subtle motion on container (for non-touch devices) */
+body:not(.shared-view) .floating-3d-icons { display: none; } /* Only show in shared view */
+@media (hover: hover) {
+    .floating-3d-icons:hover .floating-3d-icon svg {
+        transform: translateZ(6px) rotateY(12deg) scale(1.05);
+    }
+}
+
+/* Float animation (up/down and gentle rotateY for 3D feeling) */
+@keyframes float-3d {
+    0%   { transform: translateY(0) translateZ(0) rotateY(0deg); }
+    25%  { transform: translateY(calc(-1 * var(--float-distance))) translateZ(6px) rotateY(6deg); }
+    50%  { transform: translateY(0) translateZ(12px) rotateY(0deg); }
+    75%  { transform: translateY(var(--float-distance)) translateZ(6px) rotateY(-6deg); }
+    100% { transform: translateY(0) translateZ(0) rotateY(0deg); }
+}
+
+/* Add a subtle slow spin to whole icon wrapper for depth */
+.floating-3d-icons {
+    animation: icons-tilt 10s linear infinite;
+    transform-origin: center;
+}
+@keyframes icons-tilt {
+    0% { transform: rotateX(0deg) rotateY(0deg); }
+    50% { transform: rotateX(4deg) rotateY(6deg); }
+    100% { transform: rotateX(0deg) rotateY(0deg); }
+}
+
+/* Intensify for lost pets to draw attention */
+.floating-3d-icons.intense .floating-3d-icon {
+    --float-distance: 12px;
+    opacity: 1;
+    filter: drop-shadow(0 18px 28px rgba(220,53,69,0.18));
+}
+.floating-3d-icons.intense .floating-3d-icon svg {
+    transform: scale(1.08);
+    transition-duration: 300ms;
+}
+
+/* Small responsive adjustments to keep icons out of the way on narrow screens */
+@media (max-width: 480px) {
+    .floating-3d-icons { display: none; } /* hide on very small screens to avoid overlap */
+}
+
+@media (max-width: 768px) {
+    .page-wrapper {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 60px;
+        padding: 10px 0;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        height: 100vh;
+        overflow-y: auto;
+        z-index: 200;
+    }
+
+    .sidebar nav a {
+        justify-content: center;
+        padding: 15px 0;
+        margin-right: 0;
+        border-radius: 0;
+    }
+
+    .menu-icon {
+        margin-right: 0;
+    }
+
+    .menu-text {
+        display: none;
+        opacity: 0;
+    }
+
+    .main-content {
+        margin-left: 60px;
+        padding: 10px;
+    }
+
+    .container {
+        margin: 1em auto;
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .pet-profile, .panel-pet-display, #gallery-section, #docs-section, #settings-section, #users-section {
+        padding: 20px;
+        max-width: 95%;
+        box-sizing: border-box;
+    }
+
+    .panel-pet-display {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .panel-avatar-container {
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    .panel-info {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .panel-info p {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .panel-info p strong {
+        margin-bottom: 5px;
+    }
+    .panel-info p a.panel-button {
+        margin-left: 0;
+        margin-top: 5px;
+    }
+    .panel-info p.lost-status {
+        flex-direction: column;
+        text-align: center;
+        padding: 8px;
+        font-size: 1rem;
+        margin-top: 0;
+        margin-bottom: 15px;
+    }
+    .lost-toggle-label {
+        width: 100%;
+        min-width: auto;
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+    .modal-content {
+        max-width: 95%;
+        max-height: 80%;
+    }
+    .modal-document-content {
+        width: 90%;
+    }
+}
+
+/* --- Specific styles for shared view --- */
+body.shared-view {
+    background: var(--background-color); 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto; 
+}
+
+body.shared-view #app-wrapper {
+    display: block !important; 
+    width: 100%;
+    max-width: 700px; 
+    margin: auto; 
+}
+
+body.shared-view .page-wrapper {
+    display: block; 
+}
+
+body.shared-view .sidebar {
+    display: none !important; 
+}
+
+body.shared-view .main-content {
+    margin-left: 0 !important; 
+    padding: 0; 
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 40px); 
+}
+
+body.shared-view .container {
+    max-width: 100%; 
+    margin: 0; 
+    padding: 0; 
+    background: none; 
+    box-shadow: none;
+}
+
+body.shared-view .content-section {
+    display: none !important; 
+}
+
+body.shared-view #panel-section.active {
+    display: block !important; 
+    padding: 0; 
+    background: none;
+    box-shadow: none;
+    width: 100%; 
+}
+
+body.shared-view .panel-pet-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,245,240,0.95));
+    border: 1px solid rgba(34,34,34,0.06);
+    border-radius: 18px;
+    padding: 34px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.18), inset 0 -6px 24px rgba(255,209,102,0.04);
+    max-width: 640px;
+    width: 100%;
+    margin: 22px auto;
+    gap: 20px;
+    position: relative;
+    overflow: visible;
+    animation: cardEntrance 560ms cubic-bezier(.2,.9,.3,1);
+}
+
+@keyframes cardEntrance {
+    from { transform: translateY(8px); opacity:0 }
+    to { transform: translateY(0); opacity:1 }
+}
+
+body.shared-view .panel-info {
+    flex-grow: 0; 
+    width: 100%; 
+    text-align: center; 
+}
+
+body.shared-view .panel-avatar-container {
+    width: 100%; 
+    display: flex;
+    justify-content: center; 
+}
+
+body.shared-view .panel-avatar-container .avatar {
+    width: 140px; 
+    height: 140px;
+    border-radius: 12px;
+    border: 4px solid var(--accent-color);
+    transition: transform 360ms ease, box-shadow 360ms ease;
+    overflow: hidden;
+}
+
+body.shared-view .panel-avatar-container .avatar:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 18px 30px rgba(0,0,0,0.12);
+}
+
+body.shared-view .panel-info h1 {
+    display: none; 
+}
+body.shared-view .panel-info h2 {
+    text-align: center; 
+    border-bottom: none; 
+    padding-bottom: 0;
+    margin-bottom: 10px;
+    font-size: 1.6rem;
+    color: var(--accent-color);
+    letter-spacing: 0.2px;
+}
+
+body.shared-view .panel-info p {
+    text-align: center; 
+    justify-content: center; 
+    flex-direction: row; 
+    align-items: center; 
+}
+
+body.shared-view .panel-info p strong {
+    margin-right: 5px; 
+}
+
+body.shared-view .panel-info p a.panel-button {
+    margin-left: 5px; 
+    margin-top: 0; 
+}
+
+body.shared-view .panel-info p.lost-status {
+    flex-direction: row; 
+    justify-content: center; 
+    padding: 10px 15px;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    text-align: left;
+    width: auto; 
+}
+body.shared-view .panel-info p.lost-status strong {
+    margin-bottom: 0;
+}
+
+body.shared-view #panel-section > h1 {
+    display: inline-flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 20px; 
+    padding-bottom: 10px; 
+    border-bottom: 1px solid var(--border-color); 
+}
+
+/* Ensure modal is hidden in shared view */
+body.shared-view .modal {
+    display: none !important;
+}
+
+/* New Search Input styles for Users Section */
+.search-control.users-search-control {
+    margin-top: 20px;
+    margin-bottom: 20px; /* Add margin below search */
+    padding-bottom: 15px;
+    border-bottom: 1px dashed var(--border-color-dashed);
+}
+
+.search-control.users-search-control label {
+    display: block; /* Label on its own line */
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    margin-bottom: 10px; /* Space below label */
+}
+
+.search-input-container {
+    display: flex; /* Arrange input and button side-by-side */
+    gap: 10px; /* Space between input and button */
+    align-items: center;
+}
+
+.search-input-container input[type="text"] {
+    flex-grow: 1; /* Input takes available space */
+    padding: 10px 15px;
+    border: 1px solid var(--form-element-border);
+    border-radius: 6px;
+    font-size: 1rem;
+    color: var(--text-color);
+    background-color: var(--surface-color);
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-input-container input[type="text"]:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 5px var(--form-element-focus-shadow);
+    outline: none;
+}
+
+.search-input-container button {
+    /* Reuse save-btn styles but adjust padding/size */
+    padding: 10px 15px;
+    margin-top: 0; /* Remove margin from save-btn style */
+    align-self: auto; /* Remove align-self from save-btn style */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+     border-radius: 6px;
+    flex-shrink: 0; /* Prevent button from shrinking */
+}
+
+/* Style the SVG inside the button */
+.search-input-container button svg {
+    width: 20px;
+    height: 20px;
+    stroke: white; /* Ensure icon color is white on save button bg */
+}
+
+@media (max-width: 768px) {
+    .search-input-container {
+        flex-direction: column; /* Stack input and button */
+        gap: 10px; /* Space between */
+        align-items: stretch; /* Stretch items */
+    }
+    .search-input-container input[type="text"],
+    .search-input-container button {
+        width: 100%; /* Full width */
+        box-sizing: border-box;
+        text-align: center; /* Center text/content */
+         padding: 10px; /* Adjust padding for stacking */
+    }
+     .search-input-container button svg {
+         margin: 0 auto; /* Center icon */
+     }
+
+}
+
+@media (max-width: 768px) {
+    .user-entry {
+        grid-template-columns: 64px 1fr;
+    }
+    .user-buttons {
+         max-width: none;
+         width: 100%;
+         align-items: stretch;
+    }
+}
+
+/* Control section visual user list & feedback */
+.control-user-card {
+    background: linear-gradient(180deg, var(--surface-color), var(--card-bg));
+    border: 1px solid var(--card-border);
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-align: left;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-color);
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.control-user-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.06); background: linear-gradient(180deg, #fff, var(--card-bg)); }
+
+/* Success pop animation */
+.pop-success {
+    animation: pop-success 520ms cubic-bezier(.2,.9,.3,1);
+}
+@keyframes pop-success {
+    0% { transform: scale(.96); opacity: 0; }
+    40% { transform: scale(1.04); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}

@@ -1,0 +1,598 @@
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caneko</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" href="/vikey Mascotas. favicon.png" type="image/png">
+    <!-- PWA Manifest for Installability -->
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div id="login-wrapper">
+        <div class="login-container">
+            <h1 id="login-heading">Bienvenido a <span id="app-name">Caneko</span></h1>
+            <p>Inicia sesión para continuar.</p>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-username">Usuario</label>
+                    <input type="text" id="login-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Contraseña</label>
+                    <!-- Password input with toggle -->
+                    <div class="password-input-container">
+                        <input type="password" id="login-password" required>
+                         <button type="button" id="toggle-password-visibility" class="password-toggle-button" aria-label="Toggle password visibility">
+                            <svg class="eye-icon" id="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8s11 8 11 8s-4 8-11 8s-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <svg class="eye-icon" id="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- End Password input with toggle -->
+                </div>
+                 <p id="login-error-msg" class="error-message"></p>
+                <button type="submit" class="save-btn">Iniciar Sesión</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Wrapper (Hidden until logged in) -->
+    <div id="app-wrapper" style="display: none;">
+        <div class="page-wrapper">
+            <div class="sidebar">
+                <nav>
+                    <ul>
+                        <li>
+                            <a href="#" data-target="panel-section">
+                                <svg class="menu-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 13c-3.5 0-6 2.2-6 5s2.5 3 6 3 6-.5 6-3-2.5-5-6-5z" fill="currentColor"/>
+                                    <circle cx="8" cy="6" r="1.6" fill="currentColor"/>
+                                    <circle cx="12" cy="4" r="1.4" fill="currentColor"/>
+                                    <circle cx="17" cy="6" r="1.6" fill="currentColor"/>
+                                </svg>
+                                <span class="menu-text">Panel</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" data-target="pets-section">
+                                <svg class="menu-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4.5 9c0 1.5 1 2.6 2.3 2.6S9 10.5 9 9 8 6.4 6.8 6.4 4.5 7.5 4.5 9z" fill="currentColor"/>
+                                    <path d="M19.5 9c0 1.5-1 2.6-2.3 2.6S15 10.5 15 9s1-2.6 2.2-2.6S19.5 7.5 19.5 9z" fill="currentColor"/>
+                                    <path d="M12 13c-1.8 0-3.6.9-4.6 2.4C6.1 17.2 6 19 7.6 19h8.8c1.6 0 1.5-1.8.2-3.6C15.6 13.9 13.8 13 12 13z" fill="currentColor"/>
+                                </svg>
+                                <span class="menu-text">Mascotas</span>
+                            </a>
+                        </li>
+                         <!-- New Clients Button -->
+                        <li class="admin-only">
+                            <a href="#" data-target="clients-section">
+                                <svg class="menu-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                    <g fill="currentColor">
+                                        <path d="M6 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+                                        <path d="M18 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+                                    </g>
+                                    <path d="M2 19c0-3 4-5 10-5s8.5 1 10 4" stroke="currentColor" fill="none"/>
+                                    <circle cx="19" cy="13" r="1.3" fill="currentColor"/>
+                                </svg>
+                                <span class="menu-text">Clientes</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" data-target="gallery-section">
+                                <svg class="menu-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="5" width="14" height="12" rx="2" ry="2" fill="currentColor"/>
+                                    <circle cx="9.5" cy="10" r="2" fill="rgba(255,255,255,0.9)"/>
+                                    <!-- small paw overlay -->
+                                    <path d="M20 7c-.4 0-.8.2-1 .5-.2-.3-.6-.5-1-.5-.7 0-1.3.6-1.3 1.3 0 .6.4 1.1.9 1.2-.2.3-.4.6-.4 1 0 .8.6 1.4 1.4-1.4c0-.4-.1-.8-.4-1 .5-.1.9-.6 1-1.2C21.3 7.6 20.7 7 20 7z" fill="currentColor"/>
+                                </svg>
+                                <span class="menu-text">Galería</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" data-target="docs-section">
+                                <svg class="menu-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v16a1 1 0 0 0 1 1h12a2 2 0 0 1 2 2z" fill="currentColor"/>
+                                    <path d="M14 2v6h6" fill="currentColor"/>
+                                    <!-- paw badge -->
+                                    <circle cx="8" cy="16" r="1.2" fill="#fff"/>
+                                    <path d="M9.8 15.2c-.2-.5-.8-.8-1.3-.7-.5.1-.9.6-.8 1.1.1.5.6.9 1.1.8.5-.1.9-.6 1-1.2C15.6 13.9 13.8 13 12 13z" fill="currentColor"/>
+                                </svg>
+                                <span class="menu-text">Documentos</span>
+                            </a>
+                        </li>
+                         <!-- Usuarios Section - Mark as admin-only -->
+                        <li class="admin-only">
+                            <a href="#" data-target="users-section">
+                                <svg class="menu-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M16 11a4 4 0 1 0-8 0" fill="currentColor"/>
+                                    <path d="M2 20c1.5-3 6-4 10-4s8.5 1 10 4" stroke="currentColor" fill="none"/>
+                                    <!-- small paw accent -->
+                                    <circle cx="19" cy="6" r="1.1" fill="currentColor"/>
+                                    <circle cx="17.2" cy="4.2" r="0.9" fill="currentColor"/>
+                                </svg>
+                                <span class="menu-text">Usuarios</span>
+                            </a>
+                        </li>
+                         <!-- New "Control" Button - Admin Only -->
+                        <li class="admin-only">
+                             <a href="#" data-target="control-section">
+                                 <svg class="menu-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                     <rect x="3" y="6" width="18" height="12" rx="2" ry="2" fill="currentColor"/>
+                                     <circle cx="8.5" cy="12" r="1.2" fill="#fff"/>
+                                     <path d="M15 11.5c0 .8-.6 1.4-1.4 1.4S12.2 12.3 12.2 11.5 12.8 10.1 13.6 10.1 15 10.7 15 11.5z" fill="currentColor"/>
+                                 </svg>
+                                 <span class="menu-text">Control</span>
+                             </a>
+                        </li>
+                         <!-- New "Tarjeta" Button -->
+                         <li>
+                             <a href="#" id="open-card-link">
+                                 <svg class="menu-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="5" width="20" height="14" rx="2" ry="2" fill="currentColor"/>
+                                    <path d="M6 9h6" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
+                                    <!-- paw mark -->
+                                    <circle cx="17" cy="15" r="1.2" fill="#fff"/>
+                                </svg>
+                                 <span class="menu-text">Tarjeta</span>
+                             </a>
+                         </li>
+                         <!-- Logout Button (Sidebar) -->
+                        <li>
+                            <a href="#" id="logout-button">
+                                 <svg class="menu-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2 2 2 0 0 0-2 2v16a1 1 0 0 0 1 1h12a2 2 0 0 1 2 2z" stroke="currentColor"/>
+                                    <path d="M16 17l5-5-5-5" stroke="currentColor"/>
+                                    <!-- subtle paw accent at corner -->
+                                    <circle cx="19" cy="18" r="0.9" fill="currentColor"/>
+                                </svg>
+                                <span class="menu-text">Cerrar Sesión</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" data-target="settings-section">
+                                <svg class="menu-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2z" fill="currentColor"/>
+                                    <!-- tiny paw center decoration -->
+                                    <circle cx="16.5" cy="8.5" r="0.9" fill="currentColor"/>
+                                </svg>
+                                <span class="menu-text">Ajustes</span>
+                            </a>
+                        </li>
+
+                    </ul>
+                </nav>
+            </div>
+            <div class="main-content">
+                <div class="container" id="content-area">
+
+                    <!-- Panel Section -->
+                    <section id="panel-section" class="content-section active">
+                        <h1>
+                            <a href="#" id="panel-website-link" target="_blank">
+                                <img src="/logo Vikey Mascotas.png" alt="Caneko Logo" class="header-logo">
+                                Caneko
+                            </a>
+                        </h1>
+                        <div class="panel-pet-display">
+                            <div class="panel-avatar-container">
+                                <div class="avatar" id="panel-pet-avatar">
+                                    <!-- Pet avatar or default SVG will be loaded here by JS -->
+                                    <!-- Default SVG Template for Panel -->
+                                    <svg viewBox="0 0 100 100" id="default-avatar-panel" style="display: none;">
+                                        <circle cx="50" cy="50" r="45" fill="#ffd166"/>
+                                        <circle cx="35" cy="40" r="5" fill="#333"/>
+                                        <circle cx="65" cy="40" r="5" fill="#333"/>
+                                        <path d="M35,60 Q50,70 65,60" stroke="#333" stroke-width="3" fill="none"/>
+                                        <path d="M30,30 L20,10 M70,30 L80,10" stroke="#333" stroke-width="2"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="panel-info">
+                                <p id="panel-pet-lost-status" class="lost-status" style="display: none;">
+                                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                     </svg>
+                                     <strong style="color: #dc3545;">¡ESTA MASCOTA ESTÁ PERDIDA!</strong>
+                                 </p>
+                                <h2>Perfil de Mascota</h2>
+                                <p id="panel-pet-name"><strong>Nombre:</strong> -</p>
+                                <p id="panel-pet-breed"><strong>Raza:</strong> -</p>
+                                <p id="panel-pet-sex"><strong>Sexo:</strong> -</p>
+                                <p id="panel-pet-pedigree"><strong>Pedigrí:</strong> -</p>
+                                <p id="panel-pet-sterilized"><strong>Esterilizado:</strong> -</p>
+                                <p id="panel-pet-birthdate"><strong>Fecha de Nacimiento:</strong> -</p>
+                                <p id="panel-pet-age"><strong>Edad:</strong> -</p>
+                                <p id="panel-pet-color"><strong>Color:</strong> -</p>
+                                <p id="panel-pet-notes"><strong>Notas:</strong> -</p>
+
+                                <h2>Información del Dueño</h2>
+                                <p id="panel-owner-name"><strong>Dueño:</strong> -</p>
+                                <p id="panel-owner-phone"><strong>Teléfono:</strong> -</p>
+                                <p id="panel-owner-location"><strong>Ubicación:</strong> -</p>
+                            </div>
+                            <div id="panel-no-data" style="display: none; text-align: center; color: #555;">
+                                <p>Aún no has registrado a tu mascota.</p>
+                                <p>Ve a la sección "Mascotas" para añadir una.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Mascotas (Add/View/Edit Pet) Section -->
+                    <section id="pets-section" class="content-section">
+                        <h1>Gestionar Mascota</h1>
+
+                        <div class="pet-profile">
+                            <div class="avatar-container">
+                                <div class="avatar" id="pet-avatar">
+                                    <svg viewBox="0 0 100 100" id="default-avatar">
+                                        <circle cx="50" cy="50" r="45" fill="#ffd166"/>
+                                        <circle cx="35" cy="40" r="5" fill="#333"/>
+                                        <circle cx="65" cy="40" r="5" fill="#333"/>
+                                        <path d="M35,60 Q50,70 65,60" stroke="#333" stroke-width="3" fill="none"/>
+                                        <path d="M30,30 L20,10 M70,30 L80,10" stroke="#333" stroke-width="2"/>
+                                    </svg>
+                                </div>
+                                <input type="file" id="avatar-input" accept="image/*" style="display:none">
+                                <button onclick="document.getElementById('avatar-input').click()" class="upload-btn">
+                                    Cambiar Foto
+                                </button>
+                            </div>
+
+                            <form id="pet-form">
+                                <h2>Información de la Mascota</h2>
+                                <div class="form-group">
+                                    <label for="pet-name">Nombre</label>
+                                    <input type="text" id="pet-name" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="pet-breed">Raza</label>
+                                    <input type="text" id="pet-breed" required>
+                                </div>
+
+                                 <div class="form-group">
+                                    <label for="pet-sex">Sexo</label>
+                                    <select id="pet-sex">
+                                        <option value="">Selecciona...</option>
+                                        <option value="macho">Macho</option>
+                                        <option value="hembra">Hembra</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="pet-pedigree">Pedigrí</label>
+                                    <select id="pet-pedigree">
+                                        <option value="no">No</option>
+                                        <option value="si">Si</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="pet-sterilized">Esterilizado</label>
+                                    <select id="pet-sterilized">
+                                        <option value="no">No</option>
+                                        <option value="si">Si</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="pet-birthdate">Fecha de Nacimiento</label>
+                                    <input type="date" id="pet-birthdate">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="pet-age">Edad (años)</label>
+                                    <input type="number" id="pet-age" min="0" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="pet-color">Color</label>
+                                    <input type="text" id="pet-color">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="pet-notes">Notas adicionales</label>
+                                    <textarea id="pet-notes" rows="3"></textarea>
+                                </div>
+
+                                <!-- Nuevo campo para Mascota Perdida -->
+                                <div class="form-group lost-status-group">
+                                    <label>Estado de la Mascota</label>
+                                     <div class="lost-toggle-container">
+                                        <input type="checkbox" id="pet-lost" hidden>
+                                        <label for="pet-lost" class="lost-toggle-label">
+                                            <span class="toggle-off">Marcar como Perdida</span>
+                                            <span class="toggle-on">¡PERDIDA!</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <!-- Fin nuevo campo -->
+
+
+                                 <h2>Información del Dueño</h2>
+                                <div class="form-group">
+                                    <label for="owner-name">Nombre del Dueño</label>
+                                    <input type="text" id="owner-name">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="owner-phone">Teléfono del Dueño</label>
+                                    <input type="tel" id="owner-phone" placeholder="Ej: +34612345678">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="owner-location">Ubicación del Dueño</label>
+                                    <input type="text" id="owner-location" placeholder="Dirección o Enlace de Google Maps">
+                                </div>
+
+
+                                <button type="submit" class="save-btn">Guardar</button>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- Galería Section -->
+                    <section id="gallery-section" class="content-section">
+                        <h1>Galería de Fotos</h1>
+                        <p>Aquí podrás subir y ver fotos de tus mascotas.</p>
+                        <div id="gallery-count-message" class="limit-message"></div>
+                        <!-- New styled upload button + clear button wrapper -->
+                        <div class="gallery-upload-wrapper">
+                            <label for="gallery-upload" class="gallery-upload-btn" role="button" aria-label="Subir fotos">Subir Fotos</label>
+                            <button type="button" id="gallery-clear-btn" class="gallery-upload-btn clear-btn" aria-label="Cancelar selección">Cancelar</button>
+                        </div>
+                        <input type="file" id="gallery-upload" accept="image/*" multiple>
+                        <div id="gallery-previews"></div>
+                    </section>
+
+                    <!-- Documentos Section -->
+                    <section id="docs-section" class="content-section">
+                        <h1>Documentos</h1>
+                        <p>Aquí podrás subir documentos relacionados con tus mascotas (vacunas, etc.).</p>
+                        <div id="docs-count-message" class="limit-message"></div>
+                        <!-- New styled upload area (label triggers hidden input) -->
+                        <label for="docs-upload" class="docs-upload-area" role="button" aria-label="Subir documentos">
+                            <svg viewBox="0 0 24 24" class="doc-upload-icon" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15 16 10 5 21" stroke="currentColor" fill="none"/>
+                                <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                            </svg>
+                            <div class="docs-upload-text">
+                                Arrastra aquí tus PDFs o haz clic para seleccionar<br>
+                                <small>Soporte hasta 10 documentos • Solo PDF</small>
+                            </div>
+                        </label>
+                        <input type="file" id="docs-upload" accept=".pdf" style="display:none">
+                        <div id="docs-list" class="docs-list"></div>
+                    </section>
+
+                    <!-- Usuarios Section -->
+                    <section id="users-section" class="content-section">
+                        <h1>Gestionar Usuarios</h1>
+                        <div id="users-admin-only">
+                            <form id="user-form" class="simple-form">
+                                <p>Añade usuarios manualmente:</p>
+                                <div class="form-group">
+                                    <label for="user-email-input">Correo Electrónico</label>
+                                    <input type="email" id="user-email-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="user-name-input">Nombre de Usuario</label>
+                                    <input type="text" id="user-name-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="user-password-input">Contraseña</label>
+                                    <input type="password" id="user-password-input" required>
+                                </div>
+                                <button type="submit" class="save-btn">Añadir Usuario</button>
+                            </form>
+                            <!-- New Filter Controls for Users -->
+                            <div class="filter-controls users-filter-controls">
+                                <span>Filtrar usuarios:</span>
+                                <button class="filter-button active" data-filter="all">Todos</button>
+                                <button class="filter-button" data-filter="inactive">Inactivos</button>
+                                <button class="filter-button" data-filter="expired">Caducados</button>
+                            </div>
+                            <!-- New Search Input -->
+                            <div class="search-control users-search-control">
+                                <label for="user-search-input">Buscar usuario:</label>
+                                <div class="search-input-container">
+                                    <input type="text" id="user-search-input" placeholder="Escribe para buscar...">
+                                    <button type="button" id="user-search-button" class="save-btn">
+                                         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="11" cy="11" r="8"></circle>
+                                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                         </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="user-list" class="data-list">
+                                <!-- User list will be displayed here -->
+                                <!-- User entries will be generated by JS with: Name (Status), Start Date, Expiry Date, Pet Preview/Link, Toggle Status Button, Edit Dates Button, Delete Button -->
+                            </div>
+                        </div>
+                        <div id="users-access-denied" style="display: none; text-align: center; color: red;">
+                            <p>Acceso denegado. Esta sección es solo para administradores.</p>
+                        </div>
+                    </section>
+
+                    <!-- New Control Section - Admin Only -->
+                    <section id="control-section" class="content-section">
+                        <h1>Control del Administrador</h1>
+                        <p>Esta sección es solo para el administrador.</p>
+
+                        <!-- Admin limits form -->
+                        <form id="admin-limit-form" class="simple-form" style="max-width:480px; margin: 0 auto 20px;">
+                            <div class="form-group">
+                                <label for="gallery-limit-input">Límite de fotos por usuario</label>
+                                <input type="number" id="gallery-limit-input" min="1" placeholder="Número máximo de fotos">
+                            </div>
+                            <div class="form-group">
+                                <label for="docs-limit-input">Límite de documentos por usuario</label>
+                                <input type="number" id="docs-limit-input" min="1" placeholder="Número máximo de documentos">
+                            </div>
+                            <p id="control-success-msg" class="success-message" style="display:none;"></p>
+                            <p id="control-error-msg" class="error-message" style="display:none;"></p>
+                            <button type="submit" class="save-btn">Guardar Límites</button>
+                        </form>
+
+                        <!-- Per-user preview: select a user to see current usage -->
+                        <div style="max-width:640px; margin: 0 auto;">
+                            <h2>Ver uso por usuario</h2>
+                            <div class="form-group">
+                                <label for="control-user-select">Selecciona usuario</label>
+                                <select id="control-user-select"></select>
+                            </div>
+                            <div id="control-user-stats" style="margin-top:12px; text-align:center; color:var(--text-color-secondary);">
+                                <p id="control-user-gallery-count">Fotos: —</p>
+                                <p id="control-user-docs-count">Documentos: —</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Ajustes Section -->
+                    <section id="settings-section" class="content-section">
+                        <h1>Ajustes</h1>
+                        <p>Configura tus preferencias aquí.</p>
+
+                        <!-- Theme Setting -->
+                        <div class="settings-group">
+                            <h2>Tema de la Aplicación</h2>
+                            <div class="form-group">
+                                <label for="theme-toggle">Modo Oscuro</label>
+                                <div class="theme-switch-container">
+                                    <input type="checkbox" id="theme-toggle" hidden>
+                                    <label for="theme-toggle" class="theme-switch-label"></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Basic User Settings (can be expanded later) -->
+                        <div class="settings-group">
+                            <h2>Ajustes de Usuario</h2>
+                            <form id="settings-form">
+                                <div class="form-group">
+                                    <label for="user-name">Tu Nombre (Placeholder)</label>
+                                    <input type="text" id="user-name">
+                                </div>
+                                <!-- Save settings button is hidden by CSS for this placeholder form -->
+                                <button type="submit" class="save-btn">Guardar Ajustes</button>
+                            </form>
+                        </div>
+
+                        <!-- Admin Settings (visible only for admin) -->
+                        <div id="admin-settings" class="settings-group">
+                            <h2>Ajustes de Administrador</h2>
+                            <p>Cambia las credenciales del usuario administrador (<code>adminmas</code>).</p>
+                            <form id="admin-settings-form" class="simple-form">
+                                <div class="form-group">
+                                    <label for="current-admin-password">Contraseña Actual de Admin</label>
+                                    <input type="password" id="current-admin-password" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-admin-password">Nueva Contraseña de Admin</label>
+                                    <input type="password" id="new-admin-password" required>
+                                </div>
+                                <!-- New field for Admin Contact -->
+                                <div class="form-group">
+                                    <label for="admin-contact-number">Número de WhatsApp del Administrador</label>
+                                    <input type="tel" id="admin-contact-number" placeholder="Ej: +34123456789">
+                                </div>
+                                <!-- New field for Admin Website -->
+                                <div class="form-group">
+                                    <label for="admin-website-input">Sitio Web Principal de Caneko</label>
+                                    <input type="url" id="admin-website-input" placeholder="Ej: https://www.caneko.com">
+                                </div>
+                                <p id="admin-settings-error-msg" class="error-message"></p>
+                                <p id="admin-settings-success-msg" class="success-message"></p>
+                                <button type="submit" class="save-btn">Actualizar Ajustes Admin</button>
+                            </form>
+                        </div>
+
+                        <!-- Admin Contact (Visible to all users) -->
+                        <div id="admin-contact-settings" class="settings-group">
+                            <h2>Contacto del Administrador</h2>
+                            <p>Si necesitas ayuda o tienes alguna pregunta, puedes contactar al administrador.</p>
+                            <div id="admin-whatsapp-button-container" style="text-align: center; margin-top: 20px;">
+                                <!-- WhatsApp button will be added here by JS -->
+                                <p id="admin-whatsapp-not-configured" style="display: none; color: var(--warning-color);">Contacto no configurado por el administrador.</p>
+                            </div>
+                        </div>
+
+                        <!-- Main Website Link (Visible to all users) -->
+                        <div id="main-website-settings" class="settings-group">
+                            <h2>Sitio Web Principal</h2>
+                            <p>Visita el sitio web principal de Caneko para más información.</p>
+                            <div id="main-website-button-container" style="text-align: center; margin-top: 20px;">
+                                <!-- Website button will be added here by JS -->
+                                <p id="main-website-not-configured" style="display: none; color: var(--warning-color);">Sitio web no configurado por el administrador.</p>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 40px; text-align: center;">
+                            <button id="settings-logout-button" class="save-btn danger-btn">Cerrar Sesión</button>
+                        </div>
+                    </section>
+
+                    <!-- New Clients Section -->
+                    <section id="clients-section" class="content-section">
+                        <h1>Gestionar Clientes</h1>
+                        <p>Explora todas las mascotas registradas.</p>
+
+                        <!-- Filter Controls -->
+                        <div class="filter-controls">
+                            <span>Filtrar por:</span>
+                            <button class="filter-button active" data-filter="all">Todas</button>
+                            <button class="filter-button" data-filter="lost">Perdidas</button>
+                        </div>
+
+                        <!-- Pet cards for all users will be displayed here -->
+                        <div id="clients-list" class="pet-card-container">
+                            <!-- Pet cards will be loaded here by JS -->
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal (for delete confirmations) -->
+    <div id="confirmModal" class="confirm-modal" role="dialog" aria-modal="true" aria-hidden="true" style="display:none;">
+        <div class="confirm-box" role="document" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
+            <h3 id="confirmTitle" class="confirm-title">Confirmar</h3>
+            <p id="confirmMessage" class="confirm-message">¿Estás seguro?</p>
+            <div class="confirm-actions">
+                <button class="confirm-no save-btn" type="button">Cancelar</button>
+                <button class="confirm-yes danger-btn" type="button">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="myModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImage">
+        <!-- Or for documents, perhaps an iframe or text placeholder -->
+        <div class="modal-document-content" id="modalDocument">
+            <!-- Document content or placeholder/dynamic HTML will go here -->
+            <!-- For Pet Card in Modal: content will be generated with class="modal-pet-card-container" -->
+            <!-- For User Dates Edit Modal: content will be a form generated dynamically -->
+        </div>
+        <!-- Optional caption -->
+        <!-- <div id="caption"></div> -->
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
