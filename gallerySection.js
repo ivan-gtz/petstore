@@ -1,6 +1,8 @@
 // --- Galería Section Logic ---
-import { saveGalleryItemToLocalStorage, loadGalleryFromLocalStorage, deleteGalleryItemFromLocalStorage, MAX_GALLERY_ITEMS, loadUserGalleryLimit, loadAdminGalleryLimit } from './storage.js'; // Use per-user/admin limits
+import { loadUserGalleryLimit, loadAdminGalleryLimit } from './storage.js'; // Use per-user/admin limits
 import { getLoginState } from './loginHandler.js'; // Import getLoginState
+import { db } from './firebase-init.js';
+import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
 // Get the modal elements (assuming these are global or managed elsewhere, like app.js)
 // The modal is handled centrally in app.js for opening/closing
@@ -22,10 +24,10 @@ export function initGallerySection() {
             });
         }
 
-        galleryUploadInput.addEventListener('change', function(event) {
+        galleryUploadInput.addEventListener('change', async function(event) {
             const files = event.target.files;
             const currentUser = getLoginState(); // Get current user on file selection
-            if (!currentUser || !currentUser.name) {
+            if (!currentUser || !currentUser.uid) { // Changed to uid
                 alert('Error: No user is logged in. Cannot save gallery item.');
                 console.error('Gallery upload failed: No logged-in user.');
                 // Clear the file input after processing
@@ -33,8 +35,11 @@ export function initGallerySection() {
                 return;
             }
 
-            const currentItems = loadGalleryFromLocalStorage(currentUser.name);
-            const userLimit = loadUserGalleryLimit(currentUser.name);
+            const galleryDocRef = doc(db, "galleries", currentUser.uid);
+            const galleryDocSnap = await getDoc(galleryDocRef);
+            const currentItems = galleryDocSnap.exists() ? galleryDocSnap.data().images || [] : [];
+            
+            const userLimit = loadUserGalleryLimit(currentUser.uid); // Changed to uid
             const effectiveLimit = Number.isInteger(userLimit) && userLimit > 0 ? userLimit : loadAdminGalleryLimit();
             const availableSlots = effectiveLimit - currentItems.length;
 
@@ -62,7 +67,10 @@ export function initGallerySection() {
                 if (file.type.startsWith('image/')) {
 
                     // Check limit again for each file before processing
-                    const currentCount = loadGalleryFromLocalStorage(currentUser.name).length;
+                    const updatedGalleryDocSnap = await getDoc(galleryDocRef);
+                    const updatedCurrentItems = updatedGalleryDocSnap.exists() ? updatedGalleryDocSnap.data().images || [] : [];
+                    const currentCount = updatedCurrentItems.length;
+
                     if (currentCount >= effectiveLimit) {
                         console.warn(`Skipping "${file.name}": Gallery limit reached.`);
                         const skippedMsg = document.createElement('div'); // Use div for consistency with docs messages
@@ -74,10 +82,10 @@ export function initGallerySection() {
 
                     const reader = new FileReader();
 
-                    reader.onload = function(e) {
+                    reader.onload = async function(e) { // Added async here
                         const img = new Image();
 
-                        img.onload = function() {
+                        img.onload = async function() { // Added async here
                             const maxWidth = 1200; // Increased max width
                             const maxHeight = 1200; // Increased max height
                             let width = img.width;
@@ -109,7 +117,6 @@ export function initGallerySection() {
 
                             // Estimate the binary size of the Data URL (Base64 overhead ~1.33x)
                             const sizeInBytes = compressedDataUrl.length * 0.75; // Approximate size
-                            const maxSizeInBytes = 10 * 1024 * 1024; // 10 MB in bytes
 
                             // Final enforcement: ensure processed image also does not exceed 2 MB
                             const FINAL_MAX_BYTES = 2 * 1024 * 1024; // 2 MB
@@ -117,22 +124,23 @@ export function initGallerySection() {
                                 // Create item with compressed data URL
                                 const item = { name: file.name, type: 'image/jpeg', dataUrl: compressedDataUrl }; // Save as jpeg type
 
-                                // Save the item to localStorage
-                                const saved = saveGalleryItemToLocalStorage(currentUser.name, item); // save function returns boolean
-
-                                if (saved) {
-                                    displayGalleryItem(currentUser.name, item, galleryPreviewsDiv); // Display the saved item
-                                    // Update the count message immediately after saving
-                                    updateGalleryCountMessage(currentUser.name);
-                                } else {
-                                    // This case handles QuotaExceededError from storage.js
-                                    console.warn(`Failed to save "${item.name}". Storage limit might be reached.`);
-                                    const failedMsg = document.createElement('div');
-                                    failedMsg.textContent = `Error al guardar "${item.name}". El almacenamiento del navegador está lleno.`;
-                                    failedMsg.style.cssText = 'color: orange; margin-bottom: 5px; padding: 10px; background-color: var(--info-bg-warning); border-color: var(--info-border-warning); border-left: 4px solid var(--warning-color); border-radius: 4px;'; // Use variables
-                                    galleryPreviewsDiv.appendChild(failedMsg);
-                                    // Update count message even if save failed (limit still affects available slots)
-                                    updateGalleryCountMessage(currentUser.name);
+                                try {
+                                    if (galleryDocSnap.exists()) {
+                                        await updateDoc(galleryDocRef, {
+                                            images: arrayUnion(item)
+                                        });
+                                    } else {
+                                        await setDoc(galleryDocRef, {
+                                            images: [item]
+                                        });
+                                    }
+                                    console.log(`Gallery item saved for user "${currentUser.uid}" to Firestore`);
+                                    displayGalleryItem(currentUser.uid, item, galleryPreviewsDiv); // Display the saved item
+                                    updateGalleryCountMessage(currentUser.uid);
+                                } catch (e) {
+                                    console.error(`Error saving gallery item for user "${currentUser.uid}" to Firestore:`, e);
+                                    alert('Error al guardar la imagen. El tamaño del documento de Firestore podría ser demasiado grande.');
+                                    updateGalleryCountMessage(currentUser.uid);
                                 }
                             } else {
                                 // File is still too large after compression/resizing
@@ -141,8 +149,7 @@ export function initGallerySection() {
                                 sizeExceedsMsg.textContent = `"${file.name}" es demasiado grande (${(sizeInBytes / 1024 / 1024).toFixed(2)} MB) y no se guardó. El límite es 2 MB.`;
                                 sizeExceedsMsg.style.cssText = 'color: red; margin-bottom: 5px; padding: 10px; background-color: var(--info-bg-error); border-color: var(--info-border-error); border-left: 4px solid var(--error-color); border-radius: 4px;'; // Use error styles
                                 galleryPreviewsDiv.appendChild(sizeExceedsMsg);
-                                // Update count message even if save failed
-                                updateGalleryCountMessage(currentUser.name); // This will not increment the count, but might be needed if we added a placeholder
+                                updateGalleryCountMessage(currentUser.uid);
                             }
                         };
 
@@ -152,7 +159,7 @@ export function initGallerySection() {
                             errorMsg.textContent = `Error al procesar la imagen "${file.name}". Asegúrate de que es un archivo de imagen válido.`;
                             errorMsg.style.cssText = 'color: red; margin-bottom: 5px; padding: 10px; background-color: var(--info-bg-error); border-color: var(--info-border-error); border-left: 4px solid var(--error-color); border-radius: 4px;';
                             galleryPreviewsDiv.appendChild(errorMsg);
-                            updateGalleryCountMessage(currentUser.name); // Update count message even on error
+                            updateGalleryCountMessage(currentUser.uid);
                         };
 
                         // Read the file as a Data URL for the Image object
@@ -165,7 +172,7 @@ export function initGallerySection() {
                         errorMsg.textContent = `Error al leer el archivo "${file.name}".`;
                         errorMsg.style.cssText = 'color: red; margin-bottom: 5px; padding: 10px; background-color: var(--info-bg-error); border-color: var(--info-border-error); border-left: 4px solid var(--error-color); border-radius: 4px;';
                         galleryPreviewsDiv.appendChild(errorMsg);
-                        updateGalleryCountMessage(currentUser.name); // Update count message even on error
+                        updateGalleryCountMessage(currentUser.uid);
                     };
 
                     // Start reading the file
@@ -177,7 +184,7 @@ export function initGallerySection() {
                     skippedMsg.textContent = `Error: "${file.name}" no es una imagen válida y fue omitido.`;
                     skippedMsg.style.cssText = 'color: red; margin-bottom: 5px; padding: 10px; background-color: var(--info-bg-error); border-color: var(--info-border-error); border-left: 4px solid var(--error-color); border-radius: 4px;'; // Use error styles
                     galleryPreviewsDiv.appendChild(skippedMsg);
-                    updateGalleryCountMessage(currentUser.name); // Update count message for skipped files
+                    updateGalleryCountMessage(currentUser.uid);
                 }
             }
             // Clear the file input after processing all files
@@ -233,11 +240,20 @@ function displayGalleryItem(username, item, containerDiv) {
         deleteButton.onclick = (e) => {
             e.stopPropagation();
             window.showConfirmDialog('Eliminar Imagen', `¿Eliminar "${item.name}"?`, { confirmText: 'Eliminar', cancelText: 'Cancelar', danger: true })
-                .then(confirmed => {
+                .then(async confirmed => { // Added async
                     if (!confirmed) return;
-                    deleteGalleryItemFromLocalStorage(username, item);
-                    imgContainer.remove();
-                    updateGalleryCountMessage(username);
+                    const galleryDocRef = doc(db, "galleries", username);
+                    try {
+                        await updateDoc(galleryDocRef, {
+                            images: arrayRemove(item)
+                        });
+                        console.log(`Gallery item deleted for user "${username}" from Firestore`);
+                        imgContainer.remove();
+                        updateGalleryCountMessage(username);
+                    } catch (e) {
+                        console.error(`Error deleting gallery item for user "${username}" from Firestore:`, e);
+                        alert('Error al eliminar la imagen.');
+                    }
                 });
         };
         // place delete inside the meta so it shows on hover
@@ -259,7 +275,7 @@ function displayGalleryItem(username, item, containerDiv) {
 }
 
 // Function to display all saved gallery items for a specific user (modified)
-export function displayGalleryItems(username) {
+export async function displayGalleryItems(username) { // Added async
     const galleryPreviewsDiv = document.getElementById('gallery-previews');
     const galleryCountMessage = document.getElementById('gallery-count-message'); // Get the count message element
 
@@ -281,7 +297,9 @@ export function displayGalleryItems(username) {
             return;
         }
 
-        const galleryItems = loadGalleryFromLocalStorage(username); // Load specific user's items
+        const galleryDocRef = doc(db, "galleries", username);
+        const galleryDocSnap = await getDoc(galleryDocRef);
+        const galleryItems = galleryDocSnap.exists() ? galleryDocSnap.data().images || [] : [];
 
         // Update the count message before displaying items
         updateGalleryCountMessage(username);
@@ -303,7 +321,7 @@ export function displayGalleryItems(username) {
 }
 
 // Function to update the gallery count message
-function updateGalleryCountMessage(username, clear = false) {
+export async function updateGalleryCountMessage(username, clear = false) { // Added async
     const galleryCountMessage = document.getElementById('gallery-count-message');
     const uploadInput = document.getElementById('gallery-upload'); // Get the upload input to potentially disable it
 
@@ -315,7 +333,10 @@ function updateGalleryCountMessage(username, clear = false) {
         return;
     }
 
-    const currentItems = loadGalleryFromLocalStorage(username);
+    const galleryDocRef = doc(db, "galleries", username);
+    const galleryDocSnap = await getDoc(galleryDocRef);
+    const currentItems = galleryDocSnap.exists() ? galleryDocSnap.data().images || [] : [];
+    
     const count = currentItems.length;
     const userLimit = loadUserGalleryLimit(username);
     const effectiveLimit = Number.isInteger(userLimit) && userLimit > 0 ? userLimit : loadAdminGalleryLimit();

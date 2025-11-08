@@ -1,19 +1,18 @@
 // Control Section - Admin can change global upload limits and inspect per-user usage
 import { isAdmin } from './loginHandler.js';
 import {
-    loadUsersFromLocalStorage,
-    loadGalleryFromLocalStorage,
     loadDocsFromLocalStorage,
     saveAdminGalleryLimit,
     loadAdminGalleryLimit,
     saveAdminDocLimit,
     loadAdminDocLimit,
-    // new per-user limit helpers
     saveUserGalleryLimit,
     loadUserGalleryLimit,
     saveUserDocLimit,
     loadUserDocLimit
 } from './storage.js';
+import { db } from './firebase-init.js';
+import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
 export function initControlSection() {
     const controlSection = document.getElementById('control-section');
@@ -41,8 +40,11 @@ export function initControlSection() {
     docsInput.value = loadAdminDocLimit();
 
     // Populate users dropdown
-    function refreshUserList() {
-        const users = loadUsersFromLocalStorage();
+    async function refreshUserList() {
+        const usersCollection = collection(db, "users");
+        const usersSnapshot = await getDocs(usersCollection);
+        const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
         userSelect.innerHTML = '';
         const placeholderOpt = document.createElement('option');
         placeholderOpt.value = '';
@@ -50,8 +52,8 @@ export function initControlSection() {
         userSelect.appendChild(placeholderOpt);
         users.forEach(u => {
             const opt = document.createElement('option');
-            opt.value = u.name;
-            opt.textContent = u.name;
+            opt.value = u.id; // Use UID as value
+            opt.textContent = u.email; // Display email
             userSelect.appendChild(opt);
         });
 
@@ -69,17 +71,17 @@ export function initControlSection() {
             const card = document.createElement('button');
             card.type = 'button';
             card.className = 'control-user-card';
-            card.textContent = `${u.name} ${u.active? '•' : '✕'}`;
-            card.title = `Seleccionar ${u.name}`;
-            card.onclick = () => { userSelect.value = u.name; userSelect.dispatchEvent(new Event('change')); };
+            card.textContent = `${u.email} ${u.active? '•' : '✕'}`;
+            card.title = `Seleccionar ${u.email}`;
+            card.onclick = () => { userSelect.value = u.id; userSelect.dispatchEvent(new Event('change')); };
             visualList.appendChild(card);
         });
     }
     refreshUserList();
 
     // Update selected user's usage and show per-user limits when selected
-    function updateSelectedUserUsage(username) {
-        if (!username) {
+    async function updateSelectedUserUsage(userId) {
+        if (!userId) {
             galleryCountP.textContent = 'Fotos: —';
             docsCountP.textContent = 'Documentos: —';
             // restore inputs to global defaults
@@ -87,10 +89,16 @@ export function initControlSection() {
             docsInput.value = loadAdminDocLimit();
             return;
         }
-        const gallery = loadGalleryFromLocalStorage(username) || [];
-        const docs = loadDocsFromLocalStorage(username) || [];
-        const gLimitUser = loadUserGalleryLimit(username);
-        const dLimitUser = loadUserDocLimit(username);
+
+        const galleryDocRef = doc(db, "galleries", userId);
+        const galleryDocSnap = await getDoc(galleryDocRef);
+        const gallery = galleryDocSnap.exists() ? galleryDocSnap.data().images || [] : [];
+
+        // TODO: Migrate docs section and replace loadDocsFromLocalStorage
+        const docs = loadDocsFromLocalStorage(userId) || []; 
+        
+        const gLimitUser = loadUserGalleryLimit(userId);
+        const dLimitUser = loadUserDocLimit(userId);
         const gLimit = Number.isInteger(gLimitUser) && gLimitUser > 0 ? gLimitUser : loadAdminGalleryLimit();
         const dLimit = Number.isInteger(dLimitUser) && dLimitUser > 0 ? dLimitUser : loadAdminDocLimit();
         galleryCountP.innerHTML = `Fotos: ${gallery.length} / ${gLimit}`;

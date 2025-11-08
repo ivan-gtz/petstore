@@ -1,11 +1,15 @@
-// --- Data Storage (localStorage) ---
-// Note: localStorage is client-side and browser-specific.
-// Data saved here will persist only in the user's current browser
-// and will NOT be available on other devices or if the user clears their browser data.
-// For persistence across devices or on a hosting, a server-side database is required.
+// storage.js
+
+// Función para guardar datos en localStorage
+function saveData(key, data) {
+    try {
+        localStorage.setItem(key, JSON.stringify(data));
+    } catch (error) {
+        console.error(`Error saving data for key ${key}:`, error);
+    }
+}
 
 
-const STORAGE_KEY_GALLERY_PREFIX = 'galleryData_'; // Prefix for user-specific gallery data
 const STORAGE_KEY_DOCS_PREFIX = 'docsData_'; // Prefix for user-specific documents data
 const USERS_STORAGE_KEY = 'userData'; // Stores user credentials (demo)
 const LOGIN_ATTEMPTS_PREFIX = 'loginAttempts_'; // Prefix for failed login attempts data
@@ -19,11 +23,11 @@ const ADMIN_DOC_LIMIT_KEY = 'adminDocLimit';
 
 // New per-user limit key prefixes
 const USER_GALLERY_LIMIT_PREFIX = 'userGalleryLimit_';
-const USER_DOC_LIMIT_PREFIX = 'userDocLimit_';
+const USER_DOC_LIMIT_PREFIX = 'userDoc_Limit_';
 
 // --- Define Limits ---
-export const MAX_GALLERY_ITEMS = 10;
 export const MAX_DOC_ITEMS = 10;
+export const MAX_GALLERY_ITEMS = 12;
 // --- End Limits ---
 
 // --- Admin-managed limit helpers (persisted in localStorage) ---
@@ -152,75 +156,7 @@ export function loadUsersFromLocalStorage() {
     }
 }
 
-// --- Gallery Storage (modified for username and limit) ---
-export function saveGalleryItemToLocalStorage(username, item) {
-    if (!username) {
-        console.error('Cannot save gallery item: username is required.');
-        return false; // Indicate failure
-    }
-    const userStorageKey = STORAGE_KEY_GALLERY_PREFIX + username;
-    try {
-        const gallery = loadGalleryFromLocalStorage(username); // Load for the specific user
 
-        // --- Limit Check (use per-user if present, otherwise admin-configurable limit) ---
-        const userLimit = loadUserGalleryLimit(username);
-        const galleryLimit = Number.isInteger(userLimit) && userLimit > 0 ? userLimit : loadAdminGalleryLimit();
-        if (gallery.length >= galleryLimit) {
-            console.warn(`Gallery limit (${galleryLimit}) reached for user "${username}". Cannot save item "${item.name}".`);
-            return false; // Indicate failure due to limit
-        }
-        // --- End Limit Check ---
-
-        gallery.push(item);
-        localStorage.setItem(userStorageKey, JSON.stringify(gallery));
-        console.log(`Gallery item saved for user "${username}" to localStorage`);
-        return true; // Indicate success
-    } catch (e) {
-        console.error(`Error saving gallery item for user "${username}" to localStorage:`, e);
-        if (e.name === 'QuotaExceededError') {
-            alert('Error: Storage limit reached. Cannot save gallery item. Please try saving smaller images or delete some existing ones.');
-        } else {
-            alert('Error saving gallery item.');
-        }
-        return false; // Indicate failure
-    }
-}
-
-export function loadGalleryFromLocalStorage(username) {
-    if (!username) {
-        console.warn('Cannot load gallery data: username is required.');
-        return []; // Return empty array if username is missing
-    }
-    const userStorageKey = STORAGE_KEY_GALLERY_PREFIX + username;
-    try {
-        const data = localStorage.getItem(userStorageKey);
-        const parsedData = data ? JSON.parse(data) : [];
-        return Array.isArray(parsedData) ? parsedData : [];
-    } catch (e) {
-        console.error(`Error loading gallery data for user "${username}" from localStorage:`, e);
-        return [];
-    }
-}
-
-// Function to delete a gallery item (by data URL for simplicity)
-export function deleteGalleryItemFromLocalStorage(username, itemToDelete) {
-     if (!username) {
-         console.error('Cannot delete gallery item: username is required.');
-         return;
-     }
-     const userStorageKey = STORAGE_KEY_GALLERY_PREFIX + username;
-    try {
-        let gallery = loadGalleryFromLocalStorage(username); // Load for the specific user
-        // Filter out the item based on data URL (assuming data URL is unique enough for this demo)
-        // Also filter by name in case dataUrl is missing or duplicates occur
-        gallery = gallery.filter(item => !(item.name === itemToDelete.name && item.dataUrl === itemToDelete.dataUrl));
-        localStorage.setItem(userStorageKey, JSON.stringify(gallery));
-        console.log(`Gallery item deleted for user "${username}" from localStorage`);
-    } catch (e) {
-         console.error(`Error deleting gallery item for user "${username}" from localStorage:`, e);
-         alert('Error deleting gallery item.');
-    }
-}
 
 // --- Documents Storage (modified for username and saving Data URL) ---
 export function saveDocItemToLocalStorage(username, item) {
