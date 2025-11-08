@@ -131,7 +131,7 @@ export async function displayPetInPanel(username) {
         panelPetNotes.innerHTML = `<strong>Notas:</strong> <span class="pet-icon">📝</span> ${petData.notes || '-'}`;
 
         // Display Lost Status
-        if (petData.lost) {
+        if (petData.lost === true) {
             panelPetLostStatus.style.display = 'flex'; // Use flex to center content
         } else {
             panelPetLostStatus.style.display = 'none'; // Hide the "Lost" message

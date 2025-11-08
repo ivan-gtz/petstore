@@ -154,6 +154,10 @@ body {
 .sidebar nav a[data-target="gallery-section"] .menu-text::before { content: "📸"; }
 .sidebar nav a[data-target="docs-section"] .menu-text::before { content: "📄"; }
 .sidebar nav a[data-target="users-section"] .menu-text::before { content: "🐩"; }
+.sidebar nav a[data-target="users-section"] .menu-text::before { content: "👥"; }
+.sidebar nav a[data-target="tarjet"] .menu-text::before { content: "🗒️"; }
+.sidebar nav a[data-target="control-section"] .menu-text::before { content: "🧾"; }
+.sidebar nav a[data-target="logout"] .menu-text::before { content: "↪︎"; }
 .sidebar nav a[data-target="settings-section"] .menu-text::before { content: "⚙️"; }
 
 .menu-icon {
