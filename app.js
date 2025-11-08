@@ -1,6 +1,6 @@
 // Main entry point for the application
 // Coordinates initialization of different modules
-
+import './firebase-init.js'; // Import Firebase configuration first
 import { initNavigation, showSection } from './navigation.js';
 import { initPetSection, loadPetForEditing } from './petSection.js';
 // Removed displayPetInPanel from panelSection import as it's only used by the callback map
@@ -14,7 +14,7 @@ import { initLoginHandler, getLoginState, clearLoginState, isAdmin } from './log
 import { initClientsSection, displayPetsWithFilter } from './clientsSection.js';
 // Import displayPetInPanel specifically for use in the section callback map
 import { displayPetInPanel } from './panelSection.js';
-import { loadUsersFromLocalStorage, loadAppName, saveAppName } from './storage.js'; // Import loadUsersFromLocalStorage and loadAppName/saveAppName
+import { loadAppName, saveAppName } from './storage.js'; // Removed loadUsersFromLocalStorage
 import { initControlSection } from './controlSection.js'; // <-- new import
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -169,47 +169,13 @@ document.addEventListener('DOMContentLoaded', () => {
         panelNoDataMsg.style.display = 'none'; // Hide the "No data" message
 
         // --- Shared View: Check User Active Status ---
-        const users = loadUsersFromLocalStorage();
-        const targetUser = users.find(user => user.name === petOwnerUsername);
+        // This part needs to be migrated to Firebase
+        console.warn("Shared view user status check is not yet migrated to Firebase.");
+        // For now, we will assume the user is active if they have a shared link.
+        // This will be updated later.
+        panelContentArea.style.display = 'flex';
+        displayPetInPanel(petOwnerUsername);
 
-        if (targetUser && targetUser.active) {
-            // User is active, display pet data
-            console.log(`User "${petOwnerUsername}" is active. Displaying pet data.`);
-            // Ensure the panel structure is visible before displaying data
-            panelContentArea.style.display = 'flex'; // Restore flex display for pet data layout
-
-            // Display the pet data for the specified user directly in the panel
-            displayPetInPanel(petOwnerUsername); // Directly call displayPetInPanel with the username
-
-        } else {
-            // User not found OR user is inactive
-            console.warn(`User "${petOwnerUsername}" not found or is inactive. Displaying 'not available' message.`);
-
-            // Display the "Tarjeta no disponible" message
-            const notAvailableMsg = document.createElement('div');
-            notAvailableMsg.classList.add('shared-view-not-available'); // Add a class for styling
-            notAvailableMsg.innerHTML = `
-                <h2>Tarjeta No Disponible</h2>
-                <p>La información de esta mascota no está disponible en este momento.</p>
-            `;
-             // Append this custom message *inside* the panel section, ideally within .container
-             const mainPanelContainer = panelSection.querySelector('.container');
-             if(mainPanelContainer) {
-                 mainPanelContainer.appendChild(notAvailableMsg);
-                 mainPanelContainer.style.textAlign = 'center'; // Center the message
-                 mainPanelContainer.style.padding = '40px'; // Add padding
-                 mainPanelContainer.style.background = 'var(--surface-color)'; // Use variable
-                 mainPanelContainer.style.boxShadow = '0 4px 10px var(--shadow-color)'; // Use variable
-                 mainPanelContainer.style.borderRadius = '8px';
-             } else {
-                  panelSection.appendChild(notAvailableMsg); // Fallback append
-             }
-
-            // Ensure the modal is hidden in shared view
-            const modal = document.getElementById("myModal");
-             if (modal) modal.style.display = 'none';
-
-        }
 
         // Crucially, DO NOT initialize the login handler or navigation listeners
         // in shared view, as the user is not logged in and navigation is disabled.
@@ -362,22 +328,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-             // Load the current user's full data to check 'active' status
-             const users = loadUsersFromLocalStorage();
-             const currentUserData = users.find(user => user.name === currentUser.name);
-
-             if (!currentUserData || !currentUserData.active) {
-                  alert('Tu cuenta está desactivada. La tarjeta compartida no está disponible. Contacta al administrador.');
-                  console.warn(`Attempted to open pet card link for inactive user: ${currentUser.name}`);
-                  return;
-             }
-
-            // Construct the URL for the shared view, including the current user's name
-            // Ensure we are using the base path without existing hash/query params first
+            // This part needs to be migrated to Firebase
+            console.warn("'Tarjeta' link user status check is not yet migrated to Firebase.");
+            // For now, we will assume the user is active if they have a shared link.
+            // This will be updated later.
             const baseUrl = window.location.origin + window.location.pathname;
             const cardUrl = `${baseUrl}?view=shared&user=${encodeURIComponent(currentUser.name)}`;
 
-            // Open the URL in a new tab/window
             window.open(cardUrl, '_blank');
             console.log(`Opened shared view for user: ${currentUser.name}`);
         });
