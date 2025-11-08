@@ -1997,224 +1997,163 @@ body.shared-view .content-section {
 body.shared-view #panel-section.active {
     display: block !important; 
     padding: 0; 
-    background: none;
-    box-shadow: none;
-    width: 100%; 
+}
+/* --- New Styles for Inline User Editing --- */
+.user-entry-edit {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto auto auto;
+    gap: 15px;
+    align-items: center;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
 }
 
-body.shared-view .panel-pet-display {
+.user-entry-edit .user-field,
+.user-entry-edit .user-field-checkbox {
     display: flex;
     flex-direction: column;
+}
+
+.user-entry-edit label {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.user-entry-edit input[type="text"],
+.user-entry-edit input[type="date"],
+.user-entry-edit select {
+    padding: 8px 10px;
+    border: 1px solid var(--form-element-border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.user-entry-edit input.readonly-input {
+    background-color: var(--surface-color);
+    border-color: transparent;
+    font-weight: 600;
+}
+
+.user-entry-edit .user-field-checkbox {
     align-items: center;
-    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,245,240,0.95));
-    border: 1px solid rgba(34,34,34,0.06);
-    border-radius: 18px;
-    padding: 34px;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.18), inset 0 -6px 24px rgba(255,209,102,0.04);
-    max-width: 640px;
-    width: 100%;
-    margin: 22px auto;
-    gap: 20px;
-    position: relative;
-    overflow: visible;
-    animation: cardEntrance 560ms cubic-bezier(.2,.9,.3,1);
-}
-
-@keyframes cardEntrance {
-    from { transform: translateY(8px); opacity:0 }
-    to { transform: translateY(0); opacity:1 }
-}
-
-body.shared-view .panel-info {
-    flex-grow: 0; 
-    width: 100%; 
-    text-align: center; 
-}
-
-body.shared-view .panel-avatar-container {
-    width: 100%; 
-    display: flex;
-    justify-content: center; 
-}
-
-body.shared-view .panel-avatar-container .avatar {
-    width: 140px; 
-    height: 140px;
-    border-radius: 12px;
-    border: 4px solid var(--accent-color);
-    transition: transform 360ms ease, box-shadow 360ms ease;
-    overflow: hidden;
-}
-
-body.shared-view .panel-avatar-container .avatar:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 18px 30px rgba(0,0,0,0.12);
-}
-
-body.shared-view .panel-info h1 {
-    display: none; 
-}
-body.shared-view .panel-info h2 {
-    text-align: center; 
-    border-bottom: none; 
-    padding-bottom: 0;
-    margin-bottom: 10px;
-    font-size: 1.6rem;
-    color: var(--accent-color);
-    letter-spacing: 0.2px;
-}
-
-body.shared-view .panel-info p {
-    text-align: center; 
-    justify-content: center; 
-    flex-direction: row; 
-    align-items: center; 
-}
-
-body.shared-view .panel-info p strong {
-    margin-right: 5px; 
-}
-
-body.shared-view .panel-info p a.panel-button {
-    margin-left: 5px; 
-    margin-top: 0; 
-}
-
-body.shared-view .panel-info p.lost-status {
-    flex-direction: row; 
-    justify-content: center; 
-    padding: 10px 15px;
-    font-size: 1.1rem;
-    margin-bottom: 20px;
-    text-align: left;
-    width: auto; 
-}
-body.shared-view .panel-info p.lost-status strong {
-    margin-bottom: 0;
-}
-
-body.shared-view #panel-section > h1 {
-    display: inline-flex;
     justify-content: center;
-    width: 100%;
-    margin-bottom: 20px; 
-    padding-bottom: 10px; 
-    border-bottom: 1px solid var(--border-color); 
+    gap: 8px;
 }
 
-/* Ensure modal is hidden in shared view */
-body.shared-view .modal {
-    display: none !important;
+.user-entry-edit .user-buttons {
+    display: flex;
+    gap: 8px;
 }
 
-/* New Search Input styles for Users Section */
-.search-control.users-search-control {
-    margin-top: 20px;
-    margin-bottom: 20px; /* Add margin below search */
+.user-entry-edit .save-user-btn {
+    background-color: var(--button-save-bg);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.user-entry-edit .save-user-btn:hover {
+    background-color: var(--button-save-hover-bg);
+}
+
+.user-entry-edit .delete-user-btn {
+    background-color: var(--button-danger-bg);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.user-entry-edit .delete-user-btn:hover {
+    background-color: var(--button-danger-hover-bg);
+}
+
+/* Responsive adjustments for user edit grid */
+@media (max-width: 900px) {
+    .user-entry-edit {
+        grid-template-columns: 1fr 1fr;
+    }
+    .user-entry-edit .user-field:first-child { /* Email */
+        grid-column: 1 / -1; /* Make email span full width */
+    }
+}
+
+@media (max-width: 600px) {
+    .user-entry-edit {
+        grid-template-columns: 1fr;
+        padding: 10px;
+        gap: 10px;
+    }
+}
+/* --- User Filter and Search Controls --- */
+.users-filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px dashed var(--border-color-dashed);
 }
 
-.search-control.users-search-control label {
-    display: block; /* Label on its own line */
-    font-weight: 500;
-    color: var(--text-color-secondary);
-    margin-bottom: 10px; /* Space below label */
+.users-filter-controls span {
+    flex-shrink: 0;
+    margin-right: 10px;
 }
 
-.search-input-container {
-    display: flex; /* Arrange input and button side-by-side */
-    gap: 10px; /* Space between input and button */
-    align-items: center;
+.users-filter-controls .filter-button {
+    flex-shrink: 0;
 }
 
-.search-input-container input[type="text"] {
-    flex-grow: 1; /* Input takes available space */
-    padding: 10px 15px;
+#user-search-input {
+    flex-grow: 1; /* Allow input to take up available space */
+    min-width: 200px; /* Minimum width before wrapping */
+    padding: 8px 12px;
     border: 1px solid var(--form-element-border);
-    border-radius: 6px;
-    font-size: 1rem;
-    color: var(--text-color);
+    border-radius: 6px 0 0 6px; /* Rounded corners on the left */
+    font-size: 0.9rem;
     background-color: var(--surface-color);
-    box-sizing: border-box;
+    color: var(--text-color);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    margin-right: -1px; /* Overlap border with button */
 }
 
-.search-input-container input[type="text"]:focus {
+#user-search-input:focus {
     border-color: var(--accent-color);
     box-shadow: 0 0 5px var(--form-element-focus-shadow);
     outline: none;
+    z-index: 1;
+    position: relative;
 }
 
-.search-input-container button {
-    /* Reuse save-btn styles but adjust padding/size */
-    padding: 10px 15px;
-    margin-top: 0; /* Remove margin from save-btn style */
-    align-self: auto; /* Remove align-self from save-btn style */
+#user-search-button {
+    background-color: var(--button-save-bg);
+    color: white;
+    border: 1px solid var(--button-save-bg);
+    padding: 8px 15px;
+    border-radius: 0 6px 6px 0; /* Rounded corners on the right */
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-     border-radius: 6px;
-    flex-shrink: 0; /* Prevent button from shrinking */
+    transition: background-color 0.2s ease;
 }
 
-/* Style the SVG inside the button */
-.search-input-container button svg {
-    width: 20px;
-    height: 20px;
-    stroke: white; /* Ensure icon color is white on save button bg */
+#user-search-button:hover {
+    background-color: var(--button-save-hover-bg);
 }
 
-@media (max-width: 768px) {
-    .search-input-container {
-        flex-direction: column; /* Stack input and button */
-        gap: 10px; /* Space between */
-        align-items: stretch; /* Stretch items */
-    }
-    .search-input-container input[type="text"],
-    .search-input-container button {
-        width: 100%; /* Full width */
-        box-sizing: border-box;
-        text-align: center; /* Center text/content */
-         padding: 10px; /* Adjust padding for stacking */
-    }
-     .search-input-container button svg {
-         margin: 0 auto; /* Center icon */
-     }
-
-}
-
-@media (max-width: 768px) {
-    .user-entry {
-        grid-template-columns: 64px 1fr;
-    }
-    .user-buttons {
-         max-width: none;
-         width: 100%;
-         align-items: stretch;
-    }
-}
-
-/* Control section visual user list & feedback */
-.control-user-card {
-    background: linear-gradient(180deg, var(--surface-color), var(--card-bg));
-    border: 1px solid var(--card-border);
-    padding: 8px 12px;
-    border-radius: 8px;
-    text-align: left;
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--text-color);
-    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
-}
-.control-user-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.06); background: linear-gradient(180deg, #fff, var(--card-bg)); }
-
-/* Success pop animation */
-.pop-success {
-    animation: pop-success 520ms cubic-bezier(.2,.9,.3,1);
-}
-@keyframes pop-success {
-    0% { transform: scale(.96); opacity: 0; }
-    40% { transform: scale(1.04); opacity: 1; }
-    100% { transform: scale(1); opacity: 1; }
+#user-search-button svg {
+    stroke: white;
 }

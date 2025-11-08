@@ -10,7 +10,7 @@ function saveData(key, data) {
 }
 
 
-const USERS_STORAGE_KEY = 'userData'; // Stores user credentials (demo)
+
 const LOGIN_ATTEMPTS_PREFIX = 'loginAttempts_'; // Prefix for failed login attempts data
 
 // New admin-managed limit keys (global defaults, editable via admin control)
@@ -65,53 +65,7 @@ export function loadUserGalleryLimit(username) {
 
 
 
-// --- User Storage (for demo login) ---
-// Note: This stores username/password pairs for demo purposes. Passwords are NOT hashed!
-// Modified to include 'active', 'startDate', 'expiryDate' status.
-export function saveUsersToLocalStorage(usersData) {
-    try {
-        // Ensure only name, email, password, active, startDate, expiryDate are saved for each user object
-        const usersToSave = usersData.map(user => ({
-            name: user.name,
-            email: user.email || '',
-            password: user.password,
-            active: user.active !== undefined ? user.active : true, // Default to true if missing
-            startDate: user.startDate || '', // Ensure field exists, default empty string
-            expiryDate: user.expiryDate || '' // Ensure field exists, default empty string
-        }));
 
-        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(usersToSave));
-        console.log('User data saved to localStorage');
-    } catch (e) {
-        console.error('Error saving users to localStorage:', e);
-        if (e.name === 'QuotaExceededError') {
-            alert('Error: Storage limit reached. Cannot save user data.');
-        } else {
-            alert('Error saving user data.');
-        }
-    }
-}
-
-export function loadUsersFromLocalStorage() {
-    try {
-        const data = localStorage.getItem(USERS_STORAGE_KEY);
-        const parsedData = data ? JSON.parse(data) : [];
-        // Ensure it's an array and each user has required properties (defaulting if missing)
-        return Array.isArray(parsedData) ?
-               parsedData.map(user => ({
-                   name: user.name,
-                   email: user.email || '',
-                   password: user.password,
-                   active: user.active !== undefined ? user.active : true, // Default to true
-                   startDate: user.startDate || '', // Default to empty string
-                   expiryDate: user.expiryDate || '' // Default to empty string
-               }))
-               : [];
-    } catch (e) {
-        console.error('Error loading users from localStorage:', e);
-        return [];
-    }
-}
 
 // --- Login Attempts Storage ---
 export function saveLoginAttempts(username, attemptsData) {

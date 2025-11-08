@@ -1,6 +1,5 @@
 // --- Ajustes Section Logic ---
 import { isAdmin, getLoginState } from './loginHandler.js';
-import { loadUsersFromLocalStorage, saveUsersToLocalStorage } from './storage.js'; // Keep user storage for password changes
 import { db } from './firebase-init.js';
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
@@ -81,36 +80,10 @@ export function initSettingsSection() {
                 return;
             }
 
-            const currentPasswordInput = document.getElementById('current-admin-password');
-            const newPasswordInput = document.getElementById('new-admin-password');
-            const currentPassword = currentPasswordInput.value.trim();
-            const newPassword = newPasswordInput.value.trim();
             const newContactNumber = adminContactNumberInput.value.trim();
             const newWebsiteURL = adminWebsiteInput.value.trim();
 
-            let passwordUpdated = false;
             let configUpdated = false;
-
-            // Password update logic (remains using localStorage)
-            if (newPassword) {
-                if (!currentPassword) {
-                    adminSettingsErrorMsg.textContent = 'Debes introducir la contraseña actual para cambiarla.';
-                    return;
-                }
-                let users = loadUsersFromLocalStorage();
-                const adminUserIndex = users.findIndex(user => user.name === ADMIN_USERNAME);
-                if (adminUserIndex === -1) {
-                    adminSettingsErrorMsg.textContent = 'Error: Usuario administrador no encontrado.';
-                    return;
-                }
-                if (users[adminUserIndex].password !== currentPassword) {
-                    adminSettingsErrorMsg.textContent = 'Contraseña actual incorrecta.';
-                    return;
-                }
-                users[adminUserIndex].password = newPassword;
-                saveUsersToLocalStorage(users);
-                passwordUpdated = true;
-            }
 
             // App config update logic (using Firestore)
             const currentConfig = await getAppConfig();
@@ -128,19 +101,13 @@ export function initSettingsSection() {
                 }
             }
 
-            if (passwordUpdated || configUpdated) {
-                let successMsg = '';
-                if (passwordUpdated) successMsg += 'Contraseña actualizada. ';
-                if (configUpdated) successMsg += 'Configuración de la aplicación actualizada.';
-                adminSettingsSuccessMsg.textContent = successMsg.trim();
+            if (configUpdated) {
+                adminSettingsSuccessMsg.textContent = 'Configuración de la aplicación actualizada.';
                 populateAdminContactButton();
                 populateMainWebsiteButton();
             } else {
                 adminSettingsErrorMsg.textContent = 'No se detectaron cambios.';
             }
-
-            currentPasswordInput.value = '';
-            newPasswordInput.value = '';
         });
     }
 
@@ -179,8 +146,6 @@ export async function loadSettings() {
     if (adminSettingsDiv && adminSettingsForm) {
         if (isAdmin()) {
             adminSettingsDiv.style.display = 'block';
-            adminSettingsForm.querySelector('#current-admin-password').value = '';
-            adminSettingsForm.querySelector('#new-admin-password').value = '';
             
             const config = await getAppConfig();
             adminContactNumberInput.value = config.adminContact || '';

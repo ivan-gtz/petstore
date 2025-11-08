@@ -1,6 +1,6 @@
 // --- Login/Logout Logic ---
 import { auth, db } from './firebase-init.js';
-import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+import { signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 import { doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { loadLoginAttempts, saveLoginAttempts, clearLoginAttempts } from './storage.js'; // Keep for brute-force
 
@@ -37,14 +37,12 @@ export function initLoginHandler(onLoginSuccess) {
             togglePasswordButton.setAttribute('aria-label', 'Ocultar contraseña');
         }
     });
-    console.log('Password toggle listener initialized.');
 
     loginForm.addEventListener('submit', async function(event) {
         event.preventDefault();
 
         const email = loginUsernameInput.value.trim();
         const password = loginPasswordInput.value.trim();
-
         loginErrorMsg.textContent = '';
 
         if (!email || !password) {
@@ -58,78 +56,81 @@ export function initLoginHandler(onLoginSuccess) {
         if (attemptsData.lockoutUntil > now) {
             const timeLeft = Math.ceil((attemptsData.lockoutUntil - now) / 1000 / 60);
             loginErrorMsg.textContent = `Demasiados intentos fallidos. Por favor, espera aproximadamente ${timeLeft} minutos.`;
-            loginPasswordInput.value = '';
             return;
-        } else if (attemptsData.lockoutUntil > 0 && attemptsData.lockoutUntil <= now) {
-            attemptsData = { attempts: 0, lockoutUntil: 0 };
-            saveLoginAttempts(email, attemptsData);
         }
 
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-
-            loginErrorMsg.textContent = '';
             clearLoginAttempts(email);
 
-            // Check user role from Firestore
             const userDocRef = doc(db, "users", user.uid);
-            const userDoc = await getDoc(userDocRef);
+            let userDoc = await getDoc(userDocRef);
+            let userData;
 
-            let role = 'client'; // Default role
-
-            if (userDoc.exists()) {
-                role = userDoc.data().role;
-            } else {
-                // If user doc doesn't exist, check if they are the first user.
+            if (!userDoc.exists()) {
+                console.log(`User document for ${user.uid} not found, creating one.`);
                 const usersCollection = collection(db, "users");
                 const usersSnapshot = await getDocs(usersCollection);
-                if (usersSnapshot.empty) {
-                    // First user becomes admin
-                    role = 'admin';
-                }
-                // Create the user document
-                await setDoc(userDocRef, { email: user.email, role: role });
+                const isFirstUser = usersSnapshot.empty;
+                
+                const newUserProfile = {
+                    email: user.email,
+                    name: '', // Default empty name
+                    role: isFirstUser ? 'admin' : 'client',
+                    active: true,
+                    expiryDate: '', // Default empty expiry
+                    startDate: new Date().toISOString().split('T')[0]
+                };
+                
+                await setDoc(userDocRef, newUserProfile);
+                userDoc = await getDoc(userDocRef); // Re-fetch the document
+            }
+            
+            userData = userDoc.data();
+
+            // --- Authorization Checks ---
+            if (userData.active === false) {
+                loginErrorMsg.textContent = 'Tu cuenta está inactiva. Contacta al administrador.';
+                await signOut(auth); // Sign out from Firebase Auth
+                return;
             }
 
-            storeLoginState({ name: user.email, role: role, uid: user.uid });
+            if (userData.expiryDate && new Date(userData.expiryDate) < new Date()) {
+                loginErrorMsg.textContent = 'Tu cuenta ha caducado. Contacta al administrador.';
+                await signOut(auth); // Sign out from Firebase Auth
+                return;
+            }
+            // --- End Authorization Checks ---
 
+            const sessionData = {
+                uid: user.uid,
+                email: user.email,
+                name: userData.name || user.email, // Fallback to email if name is empty
+                role: userData.role || 'client'
+            };
+
+            storeLoginState(sessionData);
             onLoginSuccess();
             loginForm.reset();
-            console.log(`Login successful for user "${user.email}" with role "${role}".`);
+            console.log(`Login successful for user "${sessionData.email}" with role "${sessionData.role}".`);
 
         } catch (error) {
             console.warn(`Login failed for user "${email}":`, error.code);
             
             attemptsData.attempts = (attemptsData.attempts || 0) + 1;
-
             if (attemptsData.attempts >= MAX_FAILED_ATTEMPTS) {
                 attemptsData.lockoutUntil = now + LOCKOUT_DURATION_MS;
-                saveLoginAttempts(email, attemptsData);
-                const timeLeft = Math.ceil(LOCKOUT_DURATION_MS / 1000 / 60);
-                loginErrorMsg.textContent = `Demasiados intentos fallidos. Tu cuenta ha sido bloqueada por ${timeLeft} minutos.`;
+                loginErrorMsg.textContent = `Demasiados intentos fallidos. Tu cuenta ha sido bloqueada.`;
             } else {
-                saveLoginAttempts(email, attemptsData);
-                const remainingAttempts = MAX_FAILED_ATTEMPTS - attemptsData.attempts;
-                
-                switch (error.code) {
-                    case 'auth/user-not-found':
-                    case 'auth/wrong-password':
-                        loginErrorMsg.textContent = `Correo o contraseña incorrectos. Te quedan ${remainingAttempts} intento(s).`;
-                        break;
-                    case 'auth/invalid-email':
-                        loginErrorMsg.textContent = 'El formato del correo electrónico no es válido.';
-                        break;
-                    default:
-                        loginErrorMsg.textContent = 'Error al iniciar sesión. Inténtalo de nuevo.';
-                        break;
-                }
+                loginErrorMsg.textContent = 'Correo o contraseña incorrectos.';
             }
+            saveLoginAttempts(email, attemptsData);
             loginPasswordInput.value = '';
         }
     });
 
-    console.log('Login handler initialized with Firebase Auth and Firestore roles.');
+    console.log('Login handler initialized with Firebase Auth and extended Firestore profile checks.');
 }
 
 function storeLoginState(user) {
