@@ -1,33 +1,45 @@
 // Control Section - Admin can change global upload limits and inspect per-user usage
-import { isAdmin } from './loginHandler.js';
-import {
-    saveAdminGalleryLimit,
-    loadAdminGalleryLimit,
-    saveUserGalleryLimit,
-    loadUserGalleryLimit
-} from './storage.js'; // Keep gallery functions for now
+import { isAdmin, getLoginState } from './loginHandler.js';
 import { db } from './firebase-init.js';
-import { collection, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { collection, getDocs, doc, getDoc, setDoc, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-const DEFAULT_DOC_LIMIT = 10; // A fallback default
+const FALLBACK_LIMITS = { docLimit: 10, galleryLimit: 15 };
 
-// Helper to get document count for a user from Firestore
-async function getUserDocCount(userId) {
-    if (!userId) return 0;
-    const q = query(collection(db, "documents"), where("userId", "==", userId));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.size;
-}
+// --- Firestore Helper Functions ---
 
-// Helper to get the global doc limit from Firestore
-async function getGlobalDocLimit() {
+// Fetches global limits from settings/globalLimits
+async function getGlobalLimits() {
     const settingsRef = doc(db, "settings", "globalLimits");
     const settingsSnap = await getDoc(settingsRef);
-    if (settingsSnap.exists() && settingsSnap.data().docLimit) {
-        return settingsSnap.data().docLimit;
+    if (settingsSnap.exists()) {
+        return { ...FALLBACK_LIMITS, ...settingsSnap.data() };
     }
-    return DEFAULT_DOC_LIMIT; // Fallback
+    return FALLBACK_LIMITS;
 }
+
+// Gets the count of documents for a specific user
+async function getUserDocCount(userId) {
+    if (!userId) return 0;
+    // Documents are stored with the user's UID as the document ID in the 'documents' collection
+    const docRef = doc(db, "documents", userId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists() && docSnap.data().docs) {
+        return docSnap.data().docs.length;
+    }
+    return 0;
+}
+
+// Gets the count of gallery images for a specific user
+async function getUserGalleryCount(userId) {
+    if (!userId) return 0;
+    const galleryRef = doc(db, "galleries", userId);
+    const gallerySnap = await getDoc(galleryRef);
+    if (gallerySnap.exists() && gallerySnap.data().images) {
+        return gallerySnap.data().images.length;
+    }
+    return 0;
+}
+
 
 export function initControlSection() {
     const controlSection = document.getElementById('control-section');
@@ -45,14 +57,14 @@ export function initControlSection() {
     if (!isAdmin()) {
         controlSection.style.display = 'none';
         return;
-    } else {
-        controlSection.style.display = 'block';
     }
+    controlSection.style.display = 'block';
 
-    // Populate current limits into inputs from Firestore
+    // Populate current global limits into inputs on load
     async function populateInitialLimits() {
-        galleryInput.value = loadAdminGalleryLimit(); // Keep using local storage for gallery for now
-        docsInput.value = await getGlobalDocLimit();
+        const limits = await getGlobalLimits();
+        galleryInput.value = limits.galleryLimit;
+        docsInput.value = limits.docLimit;
     }
     populateInitialLimits();
 
@@ -62,8 +74,8 @@ export function initControlSection() {
         const usersSnapshot = await getDocs(usersCollection);
         const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        userSelect.innerHTML = '<option value="">-- Selecciona --</option>';
-        users.forEach(u => {
+        userSelect.innerHTML = '<option value="">-- Global (Todos los usuarios) --</option>';
+        users.sort((a, b) => (a.email || '').localeCompare(b.email || '')).forEach(u => {
             const opt = document.createElement('option');
             opt.value = u.id;
             opt.textContent = u.email || u.id;
@@ -72,46 +84,44 @@ export function initControlSection() {
     }
     refreshUserList();
 
-    // Update selected user's usage and show per-user limits
+    // Update selected user's usage and show their specific limits
     async function updateSelectedUserUsage(userId) {
-        const globalDocLimit = await getGlobalDocLimit();
-        if (!userId) {
-            galleryCountP.textContent = 'Fotos: —';
-            docsCountP.textContent = 'Documentos: —';
-            galleryInput.value = loadAdminGalleryLimit();
-            docsInput.value = globalDocLimit;
+        const globalLimits = await getGlobalLimits();
+        
+        if (!userId) { // Global view
+            galleryCountP.textContent = 'Fotos: N/A (Global)';
+            docsCountP.textContent = 'Documentos: N/A (Global)';
+            galleryInput.value = globalLimits.galleryLimit;
+            docsInput.value = globalLimits.docLimit;
             return;
         }
 
-        // Fetch user data to get their specific limit
+        // Fetch user data to get their specific limit overrides
         const userRef = doc(db, "users", userId);
         const userSnap = await getDoc(userRef);
         const userData = userSnap.exists() ? userSnap.data() : {};
 
         const docCount = await getUserDocCount(userId);
-        const userDocLimit = userData.docLimit || globalDocLimit;
-
-        docsCountP.innerHTML = `Documentos: ${docCount} / ${userDocLimit}`;
+        const userDocLimit = userData.docLimit ?? globalLimits.docLimit;
+        docsCountP.innerHTML = `Documentos: <b>${docCount}</b> / ${userDocLimit}`;
         docsInput.value = userDocLimit;
 
-        // Gallery part (still using local storage for now)
-        const galleryDocRef = doc(db, "galleries", userId);
-        const galleryDocSnap = await getDoc(galleryDocRef);
-        const gallery = galleryDocSnap.exists() ? galleryDocSnap.data().images || [] : [];
-        const gLimitUser = loadUserGalleryLimit(userId);
-        const gLimit = Number.isInteger(gLimitUser) && gLimitUser > 0 ? gLimitUser : loadAdminGalleryLimit();
-        galleryCountP.innerHTML = `Fotos: ${gallery.length} / ${gLimit}`;
-        galleryInput.value = gLimit;
+        const galleryCount = await getUserGalleryCount(userId);
+        const userGalleryLimit = userData.galleryLimit ?? globalLimits.galleryLimit;
+        galleryCountP.innerHTML = `Fotos: <b>${galleryCount}</b> / ${userGalleryLimit}`;
+        galleryInput.value = userGalleryLimit;
     }
 
     userSelect.addEventListener('change', () => updateSelectedUserUsage(userSelect.value));
 
+    // Handle form submission to save limits
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const g = parseInt(galleryInput.value, 10);
-        const d = parseInt(docsInput.value, 10);
-        if (!Number.isInteger(g) || g < 1 || !Number.isInteger(d) || d < 1) {
-            errorMsg.textContent = 'Introduce valores válidos (enteros ≥ 1).';
+        const galleryLimit = parseInt(galleryInput.value, 10);
+        const docLimit = parseInt(docsInput.value, 10);
+
+        if (!Number.isInteger(galleryLimit) || galleryLimit < 0 || !Number.isInteger(docLimit) || docLimit < 0) {
+            errorMsg.textContent = 'Introduce valores válidos (enteros ≥ 0).';
             errorMsg.style.display = 'block';
             successMsg.style.display = 'none';
             return;
@@ -121,20 +131,18 @@ export function initControlSection() {
         try {
             if (selectedUserId) {
                 // Save per-user limits
-                saveUserGalleryLimit(selectedUserId, g); // Keep local storage for gallery
                 const userRef = doc(db, "users", selectedUserId);
-                await updateDoc(userRef, { docLimit: d });
+                await updateDoc(userRef, { galleryLimit, docLimit });
                 successMsg.textContent = `Límites guardados para el usuario.`;
             } else {
                 // Save global limits
-                saveAdminGalleryLimit(g); // Keep local storage for gallery
                 const settingsRef = doc(db, "settings", "globalLimits");
-                await setDoc(settingsRef, { docLimit: d }, { merge: true });
+                await setDoc(settingsRef, { galleryLimit, docLimit }, { merge: true });
                 successMsg.textContent = `Límites globales guardados.`;
             }
             successMsg.style.display = 'block';
             errorMsg.style.display = 'none';
-            updateSelectedUserUsage(selectedUserId);
+            updateSelectedUserUsage(selectedUserId); // Refresh view
             setTimeout(() => successMsg.style.display = 'none', 3500);
         } catch (err) {
             console.error("Error saving limits:", err);
@@ -148,6 +156,8 @@ export function initControlSection() {
 export function loadControlSection() {
     const userSelect = document.getElementById('control-user-select');
     if (userSelect) {
+        // Refresh the user list and reset the view to global
+        userSelect.value = "";
         userSelect.dispatchEvent(new Event('change'));
     }
 }
