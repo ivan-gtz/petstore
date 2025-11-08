@@ -1,15 +1,17 @@
 // --- Panel Section Logic ---
-import { loadPetFromLocalStorage, loadAdminWebsite, loadAppName } from './storage.js'; // Import loadAdminWebsite and loadAppName
+import { db } from './firebase-init.js';
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { loadAdminWebsite, loadAppName } from './storage.js'; // Import loadAdminWebsite and loadAppName
 import { displayAvatar } from './avatarHandler.js';
 import { getLoginState } from './loginHandler.js'; // Import getLoginState to get current user
 
-export function displayPetInPanel(username) {
+export async function displayPetInPanel(username) {
     if (!username) {
         console.error('displayPetInPanel requires a username.');
         // Attempt to get logged-in user if username is missing (e.g., direct call)
         const currentUser = getLoginState();
-        if (currentUser?.name) {
-            username = currentUser.name;
+        if (currentUser?.uid) {
+            username = currentUser.uid;
             console.warn(`displayPetInPanel called without username, using logged-in user: ${username}`);
         } else {
             console.error('Cannot display pet data: No username provided and no user logged in.');
@@ -48,25 +50,6 @@ export function displayPetInPanel(username) {
     if (!panelPetAvatarDiv || !panelPetName || !panelPetBreed || !panelPetAge || !panelPetColor || !panelPetNotes || !panelNoDataMsg || !panelPetDisplayDiv ||
         !panelPetSex || !panelPetPedigree || !panelPetSterilized || !panelPetBirthdate || !panelOwnerName || !panelOwnerPhone || !panelOwnerLocation || !panelPetLostStatus || !panelWebsiteLink) { // Check for the new link
         console.error('One or more Panel elements not found. Cannot display pet data in panel.');
-        // Log which elements are missing for easier debugging
-        if (!panelPetAvatarDiv) console.error('#panel-pet-avatar missing');
-        if (!panelPetName) console.error('#panel-pet-name missing');
-        if (!panelPetBreed) console.error('#pet-breed missing');
-        if (!panelPetAge) console.error('#pet-age missing');
-        if (!panelPetColor) console.error('#pet-color missing');
-        if (!panelPetNotes) console.error('#pet-notes missing');
-        if (!panelNoDataMsg) console.error('#panel-no-data missing');
-        if (!panelPetDisplayDiv) console.error('.panel-pet-display missing');
-        if (!panelPetSex) console.error('#pet-sex missing');
-        if (!panelPetPedigree) console.error('#pet-pedigree missing');
-        if (!panelPetSterilized) console.error('#pet-sterilized missing'); // Check corrected ID
-        if (!panelPetBirthdate) console.error('#pet-birthdate missing');
-        if (!panelOwnerName) console.error('#owner-name missing');
-        if (!panelOwnerPhone) console.error('#owner-phone missing');
-        if (!panelOwnerLocation) console.error('#owner-location missing');
-        if (!panelPetLostStatus) console.error('#panel-pet-lost-status missing'); // Check for new element
-        if (!panelWebsiteLink) console.error('#panel-website-link missing'); // Check for the new link
-
         return;
     }
 
@@ -112,7 +95,9 @@ export function displayPetInPanel(username) {
         panelWebsiteLink.addEventListener('click', handleDisabledLink);
     }
 
-    const petData = loadPetFromLocalStorage(username); // Load specific user's pet data
+    const petDocRef = doc(db, "pets", username);
+    const petDoc = await getDoc(petDocRef);
+    const petData = petDoc.exists() ? petDoc.data() : null;
 
     if (petData && petData.name) {
         // Hide no data message, show info div (the parent container)

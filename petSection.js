@@ -1,10 +1,11 @@
 // --- Mascotas (Add/View/Edit Pet) Section Logic ---
-import { savePetToLocalStorage, loadPetFromLocalStorage } from './storage.js';
+import { db } from './firebase-init.js';
+import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { displayAvatar, initAvatarInput, getCurrentAvatarDataUrl, loadAvatarDataUrl } from './avatarHandler.js';
 import { displayPetInPanel } from './panelSection.js'; // Import panel display function
 import { getLoginState } from './loginHandler.js'; // Import getLoginState to get current user
 
-export function loadPetForEditing(username) {
+export async function loadPetForEditing(username) {
     if (!username) {
          console.error('loadPetForEditing requires a username.');
          return;
@@ -30,19 +31,13 @@ export function loadPetForEditing(username) {
     if (!petForm || !petNameInput || !petBreedInput || !petAgeInput || !petColorInput || !petNotesInput || !petAvatarDiv ||
         !petSexSelect || !petPedigreeSelect || !petSterilizedSelect || !petBirthdateInput || !ownerNameInput || !ownerPhoneInput || !ownerLocationInput || !petLostCheckbox) { // Check for the new element
          console.warn('Pet form elements not fully available for loading.');
-          // Log missing elements for debugging
-         if (!petSexSelect) console.warn('#pet-sex missing');
-         if (!petPedigreeSelect) console.warn('#pet-pedigree missing');
-         if (!petSterilizedSelect) console.warn('#pet-sterilized missing');
-         if (!petBirthdateInput) console.warn('#pet-birthdate missing');
-         if (!ownerNameInput) console.warn('#owner-name missing');
-         if (!ownerPhoneInput) console.warn('#owner-phone missing');
-         if (!ownerLocationInput) console.warn('#owner-location missing');
-         if (!petLostCheckbox) console.warn('#pet-lost missing'); // Log if new element is missing
          return;
     }
 
-    const petData = loadPetFromLocalStorage(username);
+    const petDocRef = doc(db, "pets", username);
+    const petDoc = await getDoc(petDocRef);
+    const petData = petDoc.exists() ? petDoc.data() : null;
+
     if (petData) {
         petNameInput.value = petData.name || '';
         petBreedInput.value = petData.breed || '';
@@ -97,11 +92,11 @@ export function initPetSection() {
     if (petForm && petNameInput && petBreedInput && petAgeInput && petColorInput && petNotesInput &&
         petSexSelect && petPedigreeSelect && petSterilizedSelect && petBirthdateInput && ownerNameInput && ownerPhoneInput && ownerLocationInput && petLostCheckbox) { // Check for new element
 
-        petForm.addEventListener('submit', function(event) {
+        petForm.addEventListener('submit', async function(event) {
             event.preventDefault();
 
             const currentUser = getLoginState();
-            if (!currentUser || !currentUser.name) {
+            if (!currentUser || !currentUser.uid) {
                  alert('Error: No user is logged in.');
                  console.error('Pet form submit failed: No logged-in user.');
                  return;
@@ -132,30 +127,17 @@ export function initPetSection() {
                  return;
             }
 
-            savePetToLocalStorage(currentUser.name, petData);
-            showSavePopup(petData.name || 'sin nombre', currentUser.name);
+            const petDocRef = doc(db, "pets", currentUser.uid);
+            await setDoc(petDocRef, petData);
+            
+            showSavePopup(petData.name || 'sin nombre', currentUser.email);
 
             // After saving, update the panel section display for the current user
-            displayPetInPanel(currentUser.name);
+            displayPetInPanel(currentUser.uid);
         });
          console.log('Pet form listener initialized.');
     } else {
         console.warn('Pet form (#pet-form) or some required inputs not found. Pet section submit logic not fully initialized.');
-         // Log missing elements for debugging
-         if (!petForm) console.warn('#pet-form missing');
-         if (!petNameInput) console.warn('#pet-name missing');
-         if (!petBreedInput) console.warn('#pet-breed missing');
-         if (!petAgeInput) console.warn('#pet-age missing');
-         if (!petColorInput) console.warn('#pet-color missing');
-         if (!petNotesInput) console.warn('#pet-notes missing');
-         if (!petSexSelect) console.warn('#pet-sex missing');
-         if (!petPedigreeSelect) console.warn('#pet-pedigree missing');
-         if (!petSterilizedSelect) console.warn('#pet-sterilized missing');
-         if (!petBirthdateInput) console.warn('#pet-birthdate missing');
-         if (!ownerNameInput) console.warn('#owner-name missing');
-         if (!ownerPhoneInput) console.warn('#owner-phone missing');
-         if (!ownerLocationInput) console.warn('#owner-location missing');
-         if (!petLostCheckbox) console.warn('#pet-lost missing'); // Log if new element is missing
     }
 
     // Initialize the avatar input specifically for the pets section

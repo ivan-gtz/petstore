@@ -4,7 +4,7 @@
 // and will NOT be available on other devices or if the user clears their browser data.
 // For persistence across devices or on a hosting, a server-side database is required.
 
-const STORAGE_KEY_PET_PREFIX = 'petProfileData_'; // Prefix for user-specific pet data
+
 const STORAGE_KEY_GALLERY_PREFIX = 'galleryData_'; // Prefix for user-specific gallery data
 const STORAGE_KEY_DOCS_PREFIX = 'docsData_'; // Prefix for user-specific documents data
 const USERS_STORAGE_KEY = 'userData'; // Stores user credentials (demo)
@@ -102,43 +102,7 @@ export function loadUserDocLimit(username) {
     }
 }
 
-// Modified functions to include username for pet data
-export function savePetToLocalStorage(username, petData) {
-    if (!username) {
-        console.error('Cannot save pet data: username is required.');
-        return;
-    }
-    const userStorageKey = STORAGE_KEY_PET_PREFIX + username;
-    try {
-        localStorage.setItem(userStorageKey, JSON.stringify(petData));
-        console.log(`Pet data saved for user "${username}" to localStorage`);
-    } catch (e) {
-        console.error(`Error saving pet data for user "${username}" to localStorage:`, e);
-        // Provide user feedback if storage is full or restricted
-        if (e.name === 'QuotaExceededError') {
-            alert('Error: Storage limit reached. Cannot save pet data. Please delete some data or try again.');
-        } else {
-            alert('Error saving pet data.');
-        }
-    }
-}
 
-export function loadPetFromLocalStorage(username) {
-    if (!username) {
-         console.warn('Cannot load pet data: username is required.');
-         return null;
-    }
-    const userStorageKey = STORAGE_KEY_PET_PREFIX + username;
-    try {
-        const data = localStorage.getItem(userStorageKey);
-        const petData = data ? JSON.parse(data) : null;
-        // console.log(`Pet data loaded for user "${username}" from localStorage`, petData); // Avoid spamming console on every load
-        return petData;
-    } catch (e) {
-        console.error(`Error loading pet data for user "${username}" from localStorage:`, e);
-        return null;
-    }
-}
 
 // --- User Storage (for demo login) ---
 // Note: This stores username/password pairs for demo purposes. Passwords are NOT hashed!

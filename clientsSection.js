@@ -1,10 +1,8 @@
 // --- Clients Section Logic (Displaying all pets) ---
-import { loadPetFromLocalStorage } from './storage.js';
+import { db } from './firebase-init.js';
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { getLoginState } from './loginHandler.js';
 import { displayAvatar } from './avatarHandler.js'; // Need avatar logic for cards
-import { loadUsersFromLocalStorage } from './storage.js'; // Import loadUsersFromLocalStorage
-
-const STORAGE_KEY_PET_PREFIX = 'petProfileData_'; // Import or redefine the prefix
 
 // Variable to hold the current filter state
 let currentFilter = 'all'; // Default filter
@@ -62,7 +60,7 @@ function escapeHTML(str) {
 
 
 // Renamed function to reflect filtering capability
-export function displayPetsWithFilter(filter = currentFilter) { // Default to current filter
+export async function displayPetsWithFilter(filter = currentFilter) { // Default to current filter
     currentFilter = filter; // Update the module's current filter state
 
     const clientsSection = document.getElementById('clients-section');
@@ -92,29 +90,9 @@ export function displayPetsWithFilter(filter = currentFilter) { // Default to cu
          existingMsg.remove();
      }
 
-
-    const allStorageKeys = Object.keys(localStorage);
-    const petKeys = allStorageKeys.filter(key => key.startsWith(STORAGE_KEY_PET_PREFIX));
-
-    const allPets = [];
-
-    // First, load all pet data that has at least a name
-    petKeys.forEach(key => {
-        const username = key.replace(STORAGE_KEY_PET_PREFIX, '');
-        const petData = loadPetFromLocalStorage(username);
-
-         // Add username to petData for potential later use (e.g., linking to user)
-         if (petData) {
-             petData.username = username;
-         }
-
-        // Only add pets with a name to the list of all pets
-        if (petData && petData.name && petData.owner?.name) { // Require both pet and owner name for display
-            allPets.push(petData);
-        } else {
-            console.warn(`Skipping pet data entry associated with user "${username}" - missing pet or owner name.`);
-        }
-    });
+    const petsCollection = collection(db, "pets");
+    const petsSnapshot = await getDocs(petsCollection);
+    const allPets = petsSnapshot.docs.map(doc => doc.data());
 
     // Now filter the loaded pets based on the selected filter
     const filteredPets = allPets.filter(pet => {
@@ -150,11 +128,6 @@ export function displayPetsWithFilter(filter = currentFilter) { // Default to cu
 
         // Then display the avatar in the attached avatar div
         displayAvatar(avatarDiv, petData.avatar || null);
-
-        // Optional: Add click listener to open modal (similar to usersSection)
-        // This requires the modal logic to be accessible or passed in.
-        // For now, let's keep the cards as simple display elements as per original spec.
-        // If needed, add: petCard.addEventListener('click', () => displayPetDetailsModal(petData.username));
     });
 
      console.log(`Displayed ${filteredPets.length} pets for filter "${currentFilter}".`);

@@ -264,8 +264,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const sectionCallbacks = {
         'panel-section': () => {
             const currentUser = getLoginState();
-            if (currentUser?.name) {
-                displayPetInPanel(currentUser.name); // Use logged-in user's name
+            if (currentUser?.uid) {
+                displayPetInPanel(currentUser.uid); // Use logged-in user's UID
             } else {
                  console.warn('Panel section activated but no user logged in.');
                  // Fallback: show no data message if panel is somehow accessed without login state
@@ -286,24 +286,24 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         'pets-section': () => {
             const currentUser = getLoginState();
-            if (currentUser?.name) loadPetForEditing(currentUser.name); // Use logged-in user's name
+            if (currentUser?.uid) loadPetForEditing(currentUser.uid); // Use logged-in user's UID
              else console.warn('Cannot load pet for editing: No user logged in.');
         },
         'users-section': () => {
              const currentUser = getLoginState();
              // displayUsersList checks isAdmin internally
-             if (currentUser?.name) displayUsersList();
+             if (currentUser?.uid) displayUsersList();
              else console.warn('Cannot display users: No user logged in.');
 
         },
         'gallery-section': () => {
             const currentUser = getLoginState();
-            if (currentUser?.name) displayGalleryItems(currentUser.name); // Use logged-in user's name
+            if (currentUser?.uid) displayGalleryItems(currentUser.uid); // Use logged-in user's UID
             else console.warn('Cannot display gallery: No user logged in.');
         },
         'docs-section': () => {
             const currentUser = getLoginState();
-            if (currentUser?.name) displayDocsItems(currentUser.name); // Use logged-in user's name
+            if (currentUser?.uid) displayDocsItems(currentUser.uid); // Use logged-in user's UID
             else console.warn('Cannot display documents: No user logged in.');
         },
         'settings-section': loadSettings, // Settings doesn't strictly need username passed if it loads user data itself
@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
             event.preventDefault(); // Prevent default link behavior
 
             const currentUser = getLoginState();
-            if (!currentUser || !currentUser.name) {
+            if (!currentUser || !currentUser.uid) {
                 alert('Por favor, inicia sesión para ver la tarjeta de tu mascota.');
                 console.warn('Attempted to open pet card link without logged-in user.');
                 return;
@@ -333,10 +333,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // For now, we will assume the user is active if they have a shared link.
             // This will be updated later.
             const baseUrl = window.location.origin + window.location.pathname;
-            const cardUrl = `${baseUrl}?view=shared&user=${encodeURIComponent(currentUser.name)}`;
+            const cardUrl = `${baseUrl}?view=shared&user=${encodeURIComponent(currentUser.uid)}`;
 
             window.open(cardUrl, '_blank');
-            console.log(`Opened shared view for user: ${currentUser.name}`);
+            console.log(`Opened shared view for user: ${currentUser.uid}`);
         });
         console.log('"Tarjeta" link listener initialized.');
     } else {
