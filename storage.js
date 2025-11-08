@@ -12,9 +12,6 @@ function saveData(key, data) {
 
 const USERS_STORAGE_KEY = 'userData'; // Stores user credentials (demo)
 const LOGIN_ATTEMPTS_PREFIX = 'loginAttempts_'; // Prefix for failed login attempts data
-const ADMIN_CONTACT_STORAGE_KEY = 'adminContactNumber'; // Key for storing admin WhatsApp number
-const ADMIN_WEBSITE_STORAGE_KEY = 'adminWebsiteURL'; // New key for storing admin website URL
-const APP_NAME_STORAGE_KEY = 'appName'; // New key for storing app name
 
 // New admin-managed limit keys (global defaults, editable via admin control)
 const ADMIN_GALLERY_LIMIT_KEY = 'adminGalleryLimit';
@@ -164,72 +161,4 @@ export function clearLoginAttempts(username) {
      } catch (e) {
          console.error(`Error clearing login attempts for user "${username}" from localStorage:`, e);
      }
-}
-
-// --- Admin Contact Storage ---
-export function saveAdminContact(contactNumber) {
-     try {
-         localStorage.setItem(ADMIN_CONTACT_STORAGE_KEY, contactNumber.trim());
-         console.log('Admin contact number saved to localStorage.');
-     } catch (e) {
-         console.error('Error saving admin contact number to localStorage:', e);
-         if (e.name === 'QuotaExceededError') {
-             alert('Error: Storage limit reached. Cannot save admin contact.');
-         } else {
-             alert('Error saving admin contact.');
-         }
-     }
-}
-
-export function loadAdminContact() {
-     try {
-         const contact = localStorage.getItem(ADMIN_CONTACT_STORAGE_KEY);
-         return contact || ''; // Return empty string if not found
-     } catch (e) {
-         console.error('Error loading admin contact number from localStorage:', e);
-         return ''; // Return empty string on error
-     }
-}
-
-export function saveAdminWebsite(websiteUrl) {
-    try {
-        localStorage.setItem(ADMIN_WEBSITE_STORAGE_KEY, websiteUrl.trim());
-        console.log('Admin website URL saved to localStorage.');
-    } catch (e) {
-        console.error('Error saving admin website URL to localStorage:', e);
-        if (e.name === 'QuotaExceededError') {
-            alert('Error: Storage limit reached. Cannot save admin website URL.');
-        } else {
-            alert('Error saving admin website URL.');
-        }
-    }
-}
-
-export function loadAdminWebsite() {
-    try {
-        const websiteUrl = localStorage.getItem(ADMIN_WEBSITE_STORAGE_KEY);
-        return websiteUrl || ''; // Return empty string if not found
-    } catch (e) {
-        console.error('Error loading admin website URL from localStorage:', e);
-        return ''; // Return empty string on error
-    }
-}
-
-// --- App Name Storage (for shared view branding) ---
-export function saveAppName(appName) {
-    try {
-        localStorage.setItem(APP_NAME_STORAGE_KEY, appName.trim());
-        console.log(`App name saved: ${appName}`);
-    } catch (e) {
-        console.error('Error saving app name to localStorage:', e);
-    }
-}
-
-export function loadAppName() {
-    try {
-        return localStorage.getItem(APP_NAME_STORAGE_KEY) || 'Caneko'; // Default to "Caneko"
-    } catch (e) {
-        console.error('Error loading app name from localStorage:', e);
-        return 'Caneko'; // Return default on error
-    }
 }

@@ -1,9 +1,27 @@
 // --- Panel Section Logic ---
 import { db } from './firebase-init.js';
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-import { loadAdminWebsite, loadAppName } from './storage.js'; // Import loadAdminWebsite and loadAppName
 import { displayAvatar } from './avatarHandler.js';
 import { getLoginState } from './loginHandler.js'; // Import getLoginState to get current user
+
+// --- Firestore Document Reference ---
+const appConfigRef = doc(db, "settings", "appConfig");
+
+// --- App Config Fetcher from Firestore ---
+async function getAppConfig() {
+    try {
+        const docSnap = await getDoc(appConfigRef);
+        if (docSnap.exists()) {
+            return docSnap.data();
+        } else {
+            // Return a default structure if the document doesn't exist
+            return { adminContact: '', adminWebsite: '', appName: 'Caneko' };
+        }
+    } catch (error) {
+        console.error("Error fetching app config from Firestore:", error);
+        return { adminContact: '', adminWebsite: '', appName: 'Caneko' }; // Return default on error
+    }
+}
 
 export async function displayPetInPanel(username) {
     if (!username) {
@@ -54,19 +72,19 @@ export async function displayPetInPanel(username) {
     }
 
     // --- Set the H1 link href dynamically and update text with app name ---
-    const currentAppName = loadAppName(); // Load the app name
+    const appConfig = await getAppConfig();
+    const currentAppName = appConfig.appName;
+    const adminWebsiteURL = appConfig.adminWebsite;
+
     const logoImg = panelWebsiteLink.querySelector('.header-logo');
      if (logoImg) {
-         logoImg.alt = `${currentAppName} Logo`; // Update alt text of the logo
+         logoImg.alt = `${currentAppName} Logo`;
      }
-     // Find the text node or span next to the image to update the text content
-     // or create it if missing, to hold the app name
      let textNode = Array.from(panelWebsiteLink.childNodes).find(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== '');
      if (textNode) {
-         textNode.textContent = ` ${currentAppName}`; // Add a space after the image
+         textNode.textContent = ` ${currentAppName}`;
      } else {
-          // Fallback: If no text node, check for existing span or append a new span
-          let textSpan = panelWebsiteLink.querySelector('span:not(.menu-text)'); // Avoid selecting menu-text span
+          let textSpan = panelWebsiteLink.querySelector('span:not(.menu-text)');
           if (!textSpan) {
                textSpan = document.createElement('span');
                panelWebsiteLink.appendChild(textSpan);
@@ -74,22 +92,19 @@ export async function displayPetInPanel(username) {
           textSpan.textContent = currentAppName;
      }
 
-    const adminWebsiteURL = loadAdminWebsite();
     if (adminWebsiteURL && adminWebsiteURL.trim() !== '') {
-        // Ensure the URL has a protocol
         const safeUrl = adminWebsiteURL.startsWith('http://') || adminWebsiteURL.startsWith('https://') ? adminWebsiteURL : `https://${adminWebsiteURL}`;
         panelWebsiteLink.href = safeUrl;
-        panelWebsiteLink.style.cursor = 'pointer'; // Ensure it looks clickable
-        panelWebsiteLink.title = `Ir al Sitio Web Principal de ${currentAppName}`; // Add a tooltip with app name
-        panelWebsiteLink.classList.remove('link-disabled'); // Remove disabled state class
+        panelWebsiteLink.style.cursor = 'pointer';
+        panelWebsiteLink.title = `Ir al Sitio Web Principal de ${currentAppName}`;
+        panelWebsiteLink.classList.remove('link-disabled');
     } else {
-        panelWebsiteLink.href = '#'; // Set to # or prevent default click if no URL
-        panelWebsiteLink.style.cursor = 'default'; // Change cursor to default
-        panelWebsiteLink.title = 'Sitio web principal no configurado'; // Add a tooltip
-        panelWebsiteLink.classList.add('link-disabled'); // Add a class for styling (e.g., grey out)
+        panelWebsiteLink.href = '#';
+        panelWebsiteLink.style.cursor = 'default';
+        panelWebsiteLink.title = 'Sitio web principal no configurado';
+        panelWebsiteLink.classList.add('link-disabled');
     }
 
-    // Remove previous disabled link listener if it exists (handles case where URL is added later)
     panelWebsiteLink.removeEventListener('click', handleDisabledLink);
     if (!adminWebsiteURL || adminWebsiteURL.trim() === '') {
         panelWebsiteLink.addEventListener('click', handleDisabledLink);
@@ -189,7 +204,7 @@ function handleDisabledLink(event) {
 }
 
 // Helper function to consistently show the "no data" state
-function showNoPetDataInPanel() {
+async function showNoPetDataInPanel() {
     const panelSection = document.getElementById('panel-section');
     if (!panelSection) return;
 
@@ -234,8 +249,10 @@ function showNoPetDataInPanel() {
     panelOwnerLocation.innerHTML = `<strong>Ubicación:</strong> -`;
     panelPetLostStatus.style.display = 'none';
 
-    // --- Set the H1 link href dynamically (also in no data state) and update text with app name ---
-    const currentAppName = loadAppName(); // Load the app name
+    const appConfig = await getAppConfig();
+    const currentAppName = appConfig.appName;
+    const adminWebsiteURL = appConfig.adminWebsite;
+
     const logoImg = panelWebsiteLink.querySelector('.header-logo');
     if (logoImg) {
         logoImg.alt = `${currentAppName} Logo`;
@@ -244,7 +261,6 @@ function showNoPetDataInPanel() {
      if (textNode) {
          textNode.textContent = ` ${currentAppName}`;
      } else {
-          // Fallback: If no text node, update existing span or append a new one
           let textSpan = panelWebsiteLink.querySelector('span:not(.menu-text)');
           if (!textSpan) {
                textSpan = document.createElement('span');
@@ -253,7 +269,6 @@ function showNoPetDataInPanel() {
           textSpan.textContent = currentAppName;
      }
 
-    const adminWebsiteURL = loadAdminWebsite();
     if (adminWebsiteURL && adminWebsiteURL.trim() !== '') {
         const safeUrl = adminWebsiteURL.startsWith('http://') || adminWebsiteURL.startsWith('https://') ? adminWebsiteURL : `https://${adminWebsiteURL}`;
         panelWebsiteLink.href = safeUrl;
@@ -266,7 +281,6 @@ function showNoPetDataInPanel() {
         panelWebsiteLink.title = 'Sitio web principal no configurado';
         panelWebsiteLink.classList.add('link-disabled');
     }
-    // Add or remove disabled link listener based on URL presence
     panelWebsiteLink.removeEventListener('click', handleDisabledLink);
     if (!adminWebsiteURL || adminWebsiteURL.trim() === '') {
         panelWebsiteLink.addEventListener('click', handleDisabledLink);

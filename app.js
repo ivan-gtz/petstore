@@ -14,10 +14,30 @@ import { initLoginHandler, getLoginState, clearLoginState, isAdmin } from './log
 import { initClientsSection, displayPetsWithFilter } from './clientsSection.js';
 // Import displayPetInPanel specifically for use in the section callback map
 import { displayPetInPanel } from './panelSection.js';
-import { loadAppName, saveAppName } from './storage.js'; // Removed loadUsersFromLocalStorage
+
 import { initControlSection } from './controlSection.js'; // <-- new import
 
-document.addEventListener('DOMContentLoaded', () => {
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { db } from './firebase-init.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+    const appConfigRef = doc(db, "settings", "appConfig");
+    async function getAppConfig() {
+        try {
+            const docSnap = await getDoc(appConfigRef);
+            if (docSnap.exists() && docSnap.data().appName) {
+                return docSnap.data();
+            }
+            return { appName: 'Caneko' }; // Default
+        } catch (error) {
+            console.error("Error fetching app config:", error);
+            return { appName: 'Caneko' }; // Default
+        }
+    }
+
+    const appConfig = await getAppConfig();
+    const appName = appConfig.appName;
 
     // --- Custom confirm dialog helper (returns a Promise<boolean>) ---
     window.showConfirmDialog = function(title, message, opts = {}) {
@@ -72,15 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const isSharedView = urlParams.get('view') === 'shared';
     const petOwnerUsername = urlParams.get('user');
 
-    // Define the default app name
-    const defaultAppName = "Caneko";
-    // Save the default app name to storage (this would typically be a one-time setup)
-    // In a real app, this might come from a configuration or admin setting that sets it.
-    // For this project, we ensure it's set if not already, or updated if it changed.
-    if (loadAppName() !== defaultAppName) {
-        saveAppName(defaultAppName);
-    }
-
     // --- Apply Theme on Load (Do this BEFORE any UI rendering) ---
     // Load the user's theme preference and apply it immediately
     if (!isSharedView) { // Only apply theme preference in the normal app view
@@ -96,7 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Ensure login heading displays the configured app name
     try {
-        const appName = loadAppName();
         const loginHeadingSpan = document.getElementById('app-name');
         if (loginHeadingSpan) loginHeadingSpan.textContent = appName;
         // Keep document title consistent
@@ -129,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('shared-view');
 
         // Update the document title for the shared view tab
-        document.title = `${loadAppName()} - Tarjeta de Mascota`;
+        document.title = `appName - Tarjeta de Mascota`;
 
         // Hide the login wrapper and show the app wrapper structure
         const loginWrapper = document.getElementById('login-wrapper');
