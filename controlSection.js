@@ -1,18 +1,33 @@
 // Control Section - Admin can change global upload limits and inspect per-user usage
 import { isAdmin } from './loginHandler.js';
 import {
-    loadDocsFromLocalStorage,
     saveAdminGalleryLimit,
     loadAdminGalleryLimit,
-    saveAdminDocLimit,
-    loadAdminDocLimit,
     saveUserGalleryLimit,
-    loadUserGalleryLimit,
-    saveUserDocLimit,
-    loadUserDocLimit
-} from './storage.js';
+    loadUserGalleryLimit
+} from './storage.js'; // Keep gallery functions for now
 import { db } from './firebase-init.js';
-import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { collection, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+const DEFAULT_DOC_LIMIT = 10; // A fallback default
+
+// Helper to get document count for a user from Firestore
+async function getUserDocCount(userId) {
+    if (!userId) return 0;
+    const q = query(collection(db, "documents"), where("userId", "==", userId));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.size;
+}
+
+// Helper to get the global doc limit from Firestore
+async function getGlobalDocLimit() {
+    const settingsRef = doc(db, "settings", "globalLimits");
+    const settingsSnap = await getDoc(settingsRef);
+    if (settingsSnap.exists() && settingsSnap.data().docLimit) {
+        return settingsSnap.data().docLimit;
+    }
+    return DEFAULT_DOC_LIMIT; // Fallback
+}
 
 export function initControlSection() {
     const controlSection = document.getElementById('control-section');
@@ -27,7 +42,6 @@ export function initControlSection() {
     const galleryCountP = document.getElementById('control-user-gallery-count');
     const docsCountP = document.getElementById('control-user-docs-count');
 
-    // Access control: hide section for non-admins
     if (!isAdmin()) {
         controlSection.style.display = 'none';
         return;
@@ -35,9 +49,12 @@ export function initControlSection() {
         controlSection.style.display = 'block';
     }
 
-    // Populate current limits into inputs
-    galleryInput.value = loadAdminGalleryLimit();
-    docsInput.value = loadAdminDocLimit();
+    // Populate current limits into inputs from Firestore
+    async function populateInitialLimits() {
+        galleryInput.value = loadAdminGalleryLimit(); // Keep using local storage for gallery for now
+        docsInput.value = await getGlobalDocLimit();
+    }
+    populateInitialLimits();
 
     // Populate users dropdown
     async function refreshUserList() {
@@ -45,115 +62,92 @@ export function initControlSection() {
         const usersSnapshot = await getDocs(usersCollection);
         const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        userSelect.innerHTML = '';
-        const placeholderOpt = document.createElement('option');
-        placeholderOpt.value = '';
-        placeholderOpt.textContent = '-- Selecciona --';
-        userSelect.appendChild(placeholderOpt);
+        userSelect.innerHTML = '<option value="">-- Selecciona --</option>';
         users.forEach(u => {
             const opt = document.createElement('option');
-            opt.value = u.id; // Use UID as value
-            opt.textContent = u.email; // Display email
+            opt.value = u.id;
+            opt.textContent = u.email || u.id;
             userSelect.appendChild(opt);
-        });
-
-        // Also populate a visual user list to the side for faster selection
-        const visualListContainerId = 'control-users-visual-list';
-        let visualList = document.getElementById(visualListContainerId);
-        if (!visualList) {
-            visualList = document.createElement('div');
-            visualList.id = visualListContainerId;
-            visualList.style.cssText = 'margin-top:18px; display:flex; flex-direction:column; gap:8px;';
-            userSelect.parentNode.appendChild(visualList);
-        }
-        visualList.innerHTML = '';
-        users.forEach(u => {
-            const card = document.createElement('button');
-            card.type = 'button';
-            card.className = 'control-user-card';
-            card.textContent = `${u.email} ${u.active? '•' : '✕'}`;
-            card.title = `Seleccionar ${u.email}`;
-            card.onclick = () => { userSelect.value = u.id; userSelect.dispatchEvent(new Event('change')); };
-            visualList.appendChild(card);
         });
     }
     refreshUserList();
 
-    // Update selected user's usage and show per-user limits when selected
+    // Update selected user's usage and show per-user limits
     async function updateSelectedUserUsage(userId) {
+        const globalDocLimit = await getGlobalDocLimit();
         if (!userId) {
             galleryCountP.textContent = 'Fotos: —';
             docsCountP.textContent = 'Documentos: —';
-            // restore inputs to global defaults
             galleryInput.value = loadAdminGalleryLimit();
-            docsInput.value = loadAdminDocLimit();
+            docsInput.value = globalDocLimit;
             return;
         }
 
+        // Fetch user data to get their specific limit
+        const userRef = doc(db, "users", userId);
+        const userSnap = await getDoc(userRef);
+        const userData = userSnap.exists() ? userSnap.data() : {};
+
+        const docCount = await getUserDocCount(userId);
+        const userDocLimit = userData.docLimit || globalDocLimit;
+
+        docsCountP.innerHTML = `Documentos: ${docCount} / ${userDocLimit}`;
+        docsInput.value = userDocLimit;
+
+        // Gallery part (still using local storage for now)
         const galleryDocRef = doc(db, "galleries", userId);
         const galleryDocSnap = await getDoc(galleryDocRef);
         const gallery = galleryDocSnap.exists() ? galleryDocSnap.data().images || [] : [];
-
-        // TODO: Migrate docs section and replace loadDocsFromLocalStorage
-        const docs = loadDocsFromLocalStorage(userId) || []; 
-        
         const gLimitUser = loadUserGalleryLimit(userId);
-        const dLimitUser = loadUserDocLimit(userId);
         const gLimit = Number.isInteger(gLimitUser) && gLimitUser > 0 ? gLimitUser : loadAdminGalleryLimit();
-        const dLimit = Number.isInteger(dLimitUser) && dLimitUser > 0 ? dLimitUser : loadAdminDocLimit();
         galleryCountP.innerHTML = `Fotos: ${gallery.length} / ${gLimit}`;
-        docsCountP.innerHTML = `Documentos: ${docs.length} / ${dLimit}`;
-        // set inputs to the effective per-user limit (or global if none)
         galleryInput.value = gLimit;
-        docsInput.value = dLimit;
     }
 
     userSelect.addEventListener('change', () => updateSelectedUserUsage(userSelect.value));
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        // simple validation
         const g = parseInt(galleryInput.value, 10);
         const d = parseInt(docsInput.value, 10);
         if (!Number.isInteger(g) || g < 1 || !Number.isInteger(d) || d < 1) {
-            errorMsg.style.display = 'block'; successMsg.style.display = 'none';
             errorMsg.textContent = 'Introduce valores válidos (enteros ≥ 1).';
+            errorMsg.style.display = 'block';
+            successMsg.style.display = 'none';
             return;
         }
 
-        // If a user is selected, save per-user limits; otherwise save global admin defaults
-        const selectedUser = userSelect.value;
-        if (selectedUser) {
-            saveUserGalleryLimit(selectedUser, g);
-            saveUserDocLimit(selectedUser, d);
-            successMsg.style.display = 'block'; errorMsg.style.display = 'none';
-            successMsg.textContent = `Límites por usuario guardados para "${selectedUser}": fotos ${g}, documentos ${d}.`;
-        } else {
-            saveAdminGalleryLimit(g);
-            saveAdminDocLimit(d);
-            successMsg.style.display = 'block'; errorMsg.style.display = 'none';
-            successMsg.textContent = `Límites globales guardados: fotos ${g}, documentos ${d}.`;
+        const selectedUserId = userSelect.value;
+        try {
+            if (selectedUserId) {
+                // Save per-user limits
+                saveUserGalleryLimit(selectedUserId, g); // Keep local storage for gallery
+                const userRef = doc(db, "users", selectedUserId);
+                await updateDoc(userRef, { docLimit: d });
+                successMsg.textContent = `Límites guardados para el usuario.`;
+            } else {
+                // Save global limits
+                saveAdminGalleryLimit(g); // Keep local storage for gallery
+                const settingsRef = doc(db, "settings", "globalLimits");
+                await setDoc(settingsRef, { docLimit: d }, { merge: true });
+                successMsg.textContent = `Límites globales guardados.`;
+            }
+            successMsg.style.display = 'block';
+            errorMsg.style.display = 'none';
+            updateSelectedUserUsage(selectedUserId);
+            setTimeout(() => successMsg.style.display = 'none', 3500);
+        } catch (err) {
+            console.error("Error saving limits:", err);
+            errorMsg.textContent = 'Error al guardar los límites.';
+            errorMsg.style.display = 'block';
+            successMsg.style.display = 'none';
         }
-
-        // Visual feedback: brief pulse animation
-        successMsg.classList.remove('pop-success');
-        // force reflow
-        void successMsg.offsetWidth;
-        successMsg.classList.add('pop-success');
-
-        // Refresh current user usage display (if any)
-        updateSelectedUserUsage(userSelect.value);
-        // hide message after a short delay
-        setTimeout(() => successMsg.style.display = 'none', 3500);
     });
 }
 
 export function loadControlSection() {
-    // small helper in case other modules want to refresh user list or stats in the future
     const userSelect = document.getElementById('control-user-select');
     if (userSelect) {
-        // trigger rebuild
-        const ev = new Event('change');
-        userSelect.dispatchEvent(ev);
+        userSelect.dispatchEvent(new Event('change'));
     }
 }

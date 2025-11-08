@@ -10,7 +10,6 @@ function saveData(key, data) {
 }
 
 
-const STORAGE_KEY_DOCS_PREFIX = 'docsData_'; // Prefix for user-specific documents data
 const USERS_STORAGE_KEY = 'userData'; // Stores user credentials (demo)
 const LOGIN_ATTEMPTS_PREFIX = 'loginAttempts_'; // Prefix for failed login attempts data
 const ADMIN_CONTACT_STORAGE_KEY = 'adminContactNumber'; // Key for storing admin WhatsApp number
@@ -19,14 +18,11 @@ const APP_NAME_STORAGE_KEY = 'appName'; // New key for storing app name
 
 // New admin-managed limit keys (global defaults, editable via admin control)
 const ADMIN_GALLERY_LIMIT_KEY = 'adminGalleryLimit';
-const ADMIN_DOC_LIMIT_KEY = 'adminDocLimit';
 
 // New per-user limit key prefixes
 const USER_GALLERY_LIMIT_PREFIX = 'userGalleryLimit_';
-const USER_DOC_LIMIT_PREFIX = 'userDoc_Limit_';
 
 // --- Define Limits ---
-export const MAX_DOC_ITEMS = 10;
 export const MAX_GALLERY_ITEMS = 12;
 // --- End Limits ---
 
@@ -48,23 +44,6 @@ export function loadAdminGalleryLimit() {
         return MAX_GALLERY_ITEMS; 
     }
 }
-export function saveAdminDocLimit(limit) {
-    try { 
-        localStorage.setItem(ADMIN_DOC_LIMIT_KEY, String(Number(limit))); 
-        console.log('Admin doc limit saved:', limit); 
-    } catch (e) { 
-        console.error('Error saving admin doc limit:', e); 
-    }
-}
-export function loadAdminDocLimit() {
-    try {
-        const v = parseInt(localStorage.getItem(ADMIN_DOC_LIMIT_KEY), 10);
-        return Number.isInteger(v) && v > 0 ? v : MAX_DOC_ITEMS;
-    } catch (e) { 
-        console.error('Error loading admin doc limit:', e); 
-        return MAX_DOC_ITEMS; 
-    }
-}
 
 // --- Per-user limit helpers ---
 export function saveUserGalleryLimit(username, limit) {
@@ -83,25 +62,6 @@ export function loadUserGalleryLimit(username) {
         return Number.isInteger(v) && v > 0 ? v : null;
     } catch (e) {
         console.error('Error loading user gallery limit:', e);
-        return null;
-    }
-}
-export function saveUserDocLimit(username, limit) {
-    if (!username) { console.error('saveUserDocLimit: username required'); return; }
-    try {
-        localStorage.setItem(USER_DOC_LIMIT_PREFIX + username, String(Number(limit)));
-        console.log(`Doc limit saved for user "${username}":`, limit);
-    } catch (e) {
-        console.error('Error saving user doc limit:', e);
-    }
-}
-export function loadUserDocLimit(username) {
-    if (!username) return null;
-    try {
-        const v = parseInt(localStorage.getItem(USER_DOC_LIMIT_PREFIX + username), 10);
-        return Number.isInteger(v) && v > 0 ? v : null;
-    } catch (e) {
-        console.error('Error loading user doc limit:', e);
         return null;
     }
 }
@@ -153,75 +113,6 @@ export function loadUsersFromLocalStorage() {
     } catch (e) {
         console.error('Error loading users from localStorage:', e);
         return [];
-    }
-}
-
-
-
-// --- Documents Storage (modified for username and saving Data URL) ---
-export function saveDocItemToLocalStorage(username, item) {
-     if (!username) {
-         console.error('Cannot save document item: username is required.');
-         return false; // Indicate failure
-     }
-    const userStorageKey = STORAGE_KEY_DOCS_PREFIX + username;
-    try {
-        const docs = loadDocsFromLocalStorage(username); // Load for the specific user
-        // --- Limit Check (use per-user if present, otherwise admin-configurable limit) ---
-        const userLimit = loadUserDocLimit(username);
-        const docsLimit = Number.isInteger(userLimit) && userLimit > 0 ? userLimit : loadAdminDocLimit();
-        if (docs.length >= docsLimit) {
-            console.warn(`Documents limit (${docsLimit}) reached for user "${username}". Cannot save item "${item.name}".`);
-            return false; // Indicate failure due to limit
-        }
-        // --- End Limit Check ---
-        docs.push(item); // Item now includes dataUrl
-        localStorage.setItem(userStorageKey, JSON.stringify(docs));
-        console.log(`Document item saved for user "${username}" to localStorage`);
-         return true; // Indicate success
-    } catch (e) {
-        console.error(`Error saving document item for user "${username}" to localStorage:`, e);
-        if (e.name === 'QuotaExceededError') {
-            alert('Error: Storage limit reached. Cannot save document item. Please try saving smaller files or delete some existing ones.');
-        } else {
-            alert('Error saving document item.');
-        }
-         return false; // Indicate failure
-    }
-}
-
-export function loadDocsFromLocalStorage(username) {
-     if (!username) {
-         console.warn('Cannot load document data: username is required.');
-         return []; // Return empty array if username is missing
-     }
-    const userStorageKey = STORAGE_KEY_DOCS_PREFIX + username;
-    try {
-        const data = localStorage.getItem(userStorageKey);
-        const parsedData = data ? JSON.parse(data) : [];
-        return Array.isArray(parsedData) ? parsedData : [];
-    } catch (e) {
-        console.error(`Error loading document data for user "${username}" from localStorage:`, e);
-        return [];
-    }
-}
-
-// Function to delete a document item (by name and dataUrl if available)
-export function deleteDocItemFromLocalStorage(username, itemToDelete) {
-    if (!username) {
-        console.error('Cannot delete document item: username is required.');
-        return;
-    }
-     const userStorageKey = STORAGE_KEY_DOCS_PREFIX + username;
-    try {
-        let docs = loadDocsFromLocalStorage(username); // Load for the specific user
-        // Filter out the item based on name and dataUrl (more robust)
-        docs = docs.filter(item => !(item.name === itemToDelete.name && item.dataUrl === itemToDelete.dataUrl));
-        localStorage.setItem(userStorageKey, JSON.stringify(docs));
-        console.log(`Document item deleted for user "${username}" from localStorage`);
-    } catch (e) {
-         console.error(`Error deleting document item for user "${username}" from localStorage:`, e);
-         alert('Error deleting document item.');
     }
 }
 
