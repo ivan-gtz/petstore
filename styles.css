@@ -959,7 +959,8 @@ body.dark-theme .user-entry-clickable:hover {
 .form-group textarea,
 .form-group select,
 .form-group input[type="date"],
-.form-group input[type="tel"] {
+.form-group input[type="tel"],
+.form-group input[type="url"] {
     padding: 12px 15px;
     border: 1px solid var(--form-element-border);
     border-radius: 6px;
