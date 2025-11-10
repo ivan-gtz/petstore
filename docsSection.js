@@ -186,9 +186,11 @@ export async function displayDocsItems(userId) {
     const docsListDiv = document.getElementById('docs-list');
     if (!docsListDiv) return;
 
-    docsListDiv.innerHTML = '<h3>Documentos Guardados</h3>';
+    let html = '<h3>Documentos Guardados</h3>';
+
     if (!userId) {
-        docsListDiv.innerHTML += '<p>Inicia sesión para ver tus documentos.</p>';
+        html += '<p>Inicia sesión para ver tus documentos.</p>';
+        docsListDiv.innerHTML = html;
         updateDocsCountMessage(null);
         return;
     }
@@ -200,8 +202,12 @@ export async function displayDocsItems(userId) {
     updateDocsCountMessage(userId);
 
     if (docItems.length === 0) {
-        docsListDiv.innerHTML += '<p>Aún no hay documentos guardados.</p>';
-    } else {
+        html += '<p>Aún no hay documentos guardados.</p>';
+    }
+    
+    docsListDiv.innerHTML = html;
+
+    if (docItems.length > 0) {
         docItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(item => {
             displayDocItem(userId, item, docsListDiv);
         });

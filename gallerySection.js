@@ -214,14 +214,17 @@ function displayGalleryItem(userId, item, containerDiv) {
 }
 
 export async function displayGalleryItems(userId) {
+    console.log('displayGalleryItems called from:', new Error().stack);
     const galleryPreviewsDiv = document.getElementById('gallery-previews');
     if (!galleryPreviewsDiv) return;
 
     console.log('Before clearing gallery:', galleryPreviewsDiv.innerHTML);
 
-    galleryPreviewsDiv.innerHTML = '<h3>Imágenes Guardadas</h3>';
+    let html = '<h3>Imágenes Guardadas</h3>';
+
     if (!userId) {
-        galleryPreviewsDiv.innerHTML += '<p>Error: Usuario no especificado.</p>';
+        html += '<p>Error: Usuario no especificado.</p>';
+        galleryPreviewsDiv.innerHTML = html;
         return;
     }
 
@@ -232,8 +235,12 @@ export async function displayGalleryItems(userId) {
     updateGalleryCountMessage(userId);
 
     if (galleryItems.length === 0) {
-        galleryPreviewsDiv.innerHTML += '<p>Aún no hay imágenes en la galería.</p>';
-    } else {
+        html += '<p>Aún no hay imágenes en la galería.</p>';
+    }
+    
+    galleryPreviewsDiv.innerHTML = html;
+
+    if (galleryItems.length > 0) {
         galleryItems.forEach(item => displayGalleryItem(userId, item, galleryPreviewsDiv));
     }
 }
