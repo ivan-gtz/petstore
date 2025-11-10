@@ -84,11 +84,9 @@ export async function displayPetsWithFilter(filter = currentFilter) { // Default
 
 
     // Clear previous list and any existing messages
-    petCardContainer.innerHTML = '';
-     const existingMsg = clientsSection.querySelector('.no-pets-message');
-     if (existingMsg) {
-         existingMsg.remove();
-     }
+    while (petCardContainer.firstChild) {
+        petCardContainer.removeChild(petCardContainer.firstChild);
+    }
 
     const petsCollection = collection(db, "pets");
     const petsSnapshot = await getDocs(petsCollection);
