@@ -127,8 +127,19 @@ async function processAndUploadImage(dataUrl, fileName, userId, limit) {
 
         try {
             const docSnap = await getDoc(galleryDocRef);
+
             if (docSnap.exists()) {
-                if (docSnap.data().images.length < limit) {
+                const existingImages = docSnap.data().images || [];
+                const isDuplicate = existingImages.some(existingItem => existingItem.dataUrl === item.dataUrl);
+
+                if (isDuplicate) {
+                    console.warn(`Attempted to add a duplicate image ("${fileName}"). Upload skipped.`);
+                    // Optionally, inform the user.
+                    // alert(`La imagen "${fileName}" ya existe en la galería y no se volverá a guardar.`);
+                    return; // Stop execution to prevent saving
+                }
+                
+                if (existingImages.length < limit) {
                     await updateDoc(galleryDocRef, { images: arrayUnion(item) });
                 } else {
                     throw new Error("Limit exceeded just before final write.");
@@ -137,7 +148,8 @@ async function processAndUploadImage(dataUrl, fileName, userId, limit) {
                 await setDoc(galleryDocRef, { images: [item] });
             }
             console.log(`Gallery item saved for user "${userId}"`);
-            displayGalleryItem(userId, item, document.getElementById('gallery-previews'));
+            // Refresh the entire gallery from Firestore to ensure consistency
+            displayGalleryItems(userId);
             updateGalleryCountMessage(userId);
         } catch (e) {
             console.error("Error saving gallery item:", e);
@@ -204,6 +216,8 @@ function displayGalleryItem(userId, item, containerDiv) {
 export async function displayGalleryItems(userId) {
     const galleryPreviewsDiv = document.getElementById('gallery-previews');
     if (!galleryPreviewsDiv) return;
+
+    console.log('Before clearing gallery:', galleryPreviewsDiv.innerHTML);
 
     galleryPreviewsDiv.innerHTML = '<h3>Imágenes Guardadas</h3>';
     if (!userId) {
