@@ -260,8 +260,8 @@ document.addEventListener('DOMContentLoaded', async () => {
               loginWrapper.style.display = 'flex';
          }
          // Optional: Clear hash and query parameters from URL on logout
-         // Use replaceState to avoid adding logout to browser history
-         window.history.replaceState({}, '', '/');
+         // Use hash to avoid adding logout to browser history
+         window.location.hash = ''; // Clear the hash
          console.log('Logout complete. Showing login screen.');
 
          // Clear any loaded data in sections for the previous user (optional but good practice)
@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // After opening, navigate the main app back to the panel
             showSection('panel-section', sectionCallbacks);
-            history.pushState(null, '', `/panel-section`);
+            window.location.hash = '#/panel-section';
         });
         console.log('"Tarjeta" link listener initialized.');
     } else {
@@ -393,9 +393,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             initNavigation(sectionCallbacks, handleLogout);
             console.log('Main app UI setup complete. Navigation initialized.');
 
-            // Explicitly navigate to the panel section after login
-            showSection('panel-section', sectionCallbacks);
-            history.pushState(null, '', '/panel-section');
+            // The initial section is now correctly handled by initNavigation based on the URL hash.
 
             // Attach logout listeners (only needed in main app view)
             const settingsLogoutButton = document.getElementById('settings-logout-button');

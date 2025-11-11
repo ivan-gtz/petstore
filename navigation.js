@@ -40,8 +40,8 @@ export function showSection(targetId, sectionCallbacks = {}) {
         // Redirect to the panel section
          const panelSection = document.getElementById('panel-section');
          if (panelSection) {
-              // Use history.replaceState to prevent the denied section from being in the history
-              window.history.replaceState(null, '', `/panel-section`);
+              // Use hash to prevent the denied section from being in the history
+              window.location.hash = `/panel-section`;
               showSection('panel-section', sectionCallbacks); // Redirect to panel
          } else {
                // Fallback if panel is also missing
@@ -121,20 +121,20 @@ export function initNavigation(sectionCallbacks = {}, handleLogout = () => {}) {
 
 
             if (targetId) {
-                // Update URL with a path-based approach
-                const newPath = `/${targetId}`;
-                history.pushState(null, '', newPath);
+                // Update URL with hash-based approach
+                window.location.hash = `/${targetId}`;
                 showSection(targetId, sectionCallbacks);
             }
         });
     });
 
-    // Determine and show initial active section based on path or default
-    const path = window.location.pathname;
-    let initialSectionId = path.substring(1) || (initialActiveSection ? initialActiveSection.id : defaultSectionId);
+    // Determine and show initial active section based on hash or default
+    const hash = window.location.hash;
+    // Remove '#' from the hash, then get the path. If hash is empty, default to panel-section.
+    let initialSectionId = hash ? hash.substring(2) : defaultSectionId; // Remove '#/'
 
-    // If the path is just '/', default to the defaultSectionId
-    if (path === '/') {
+    // If the hash is just '#/', default to the defaultSectionId
+    if (hash === '#/') {
         initialSectionId = defaultSectionId;
     }
 
@@ -144,7 +144,7 @@ export function initNavigation(sectionCallbacks = {}, handleLogout = () => {}) {
          console.warn(`Redirecting non-admin user from ${initialSectionId} section on initial load.`);
          initialSectionId = defaultSectionId; // Change target to panel
          // Update URL to reflect the redirect
-         window.history.replaceState(null, '', `/${initialSectionId}`);
+         window.location.hash = `/${initialSectionId}`;
     }
 
 
@@ -154,23 +154,23 @@ export function initNavigation(sectionCallbacks = {}, handleLogout = () => {}) {
      showSection(initialSectionId, sectionCallbacks);
 
 
-    // Handle browser back/forward navigation
-    window.addEventListener('popstate', () => {
-        // Check shared view again on popstate
+    // Handle browser back/forward navigation (now using hashchange for hash-based routing)
+    window.addEventListener('hashchange', () => {
+        // Check shared view again on hashchange
          if (document.body.classList.contains('shared-view')) {
-              console.log('Popstate ignored in shared view.');
+              console.log('Hashchange ignored in shared view.');
               return;
          }
-        const path = window.location.pathname;
-        let targetId = path.substring(1) || defaultSectionId;
+        const hash = window.location.hash;
+        let targetId = hash ? hash.substring(2) : defaultSectionId; // Remove '#/'
 
-        // Check admin status on popstate for admin-only sections
+        // Check admin status on hashchange for admin-only sections
          const adminOnlySections = ['clients-section', 'users-section', 'control-section']; 
          if (adminOnlySections.includes(targetId) && !isAdmin()) {
-              console.warn(`Popstate to ${targetId} section blocked: User is not admin.`);
-              // Redirect popstate back to panel
+              console.warn(`Hashchange to ${targetId} section blocked: User is not admin.`);
+              // Redirect hashchange back to panel
               targetId = defaultSectionId;
-              window.history.replaceState(null, '', `/${targetId}`); // Replace state to prevent infinite loop
+              window.location.hash = `/${targetId}`; // Update hash to prevent infinite loop
          }
 
         showSection(targetId, sectionCallbacks);
