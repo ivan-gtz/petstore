@@ -22,9 +22,24 @@ async function getGlobalLimits() {
     if (settingsSnap.exists() && typeof settingsSnap.data().galleryLimit === 'number') {
         return { galleryLimit: settingsSnap.data().galleryLimit };
     }
-    // Return just the fallback if the document doesn't exist or limit is not a number
     return { galleryLimit: FALLBACK_GALLERY_LIMIT };
 }
+
+// --- UI Helper Functions ---
+
+function createUploadingPlaceholder(file) {
+    const placeholderId = `placeholder-${Date.now()}-${Math.random().toString(36).substring(2)}`;
+    const placeholder = document.createElement('div');
+    placeholder.id = placeholderId;
+    placeholder.className = 'upload-placeholder';
+    placeholder.innerHTML = `
+        <div class="loader"></div>
+        <div class="placeholder-filename">${escapeHTML(file.name)}</div>
+        <div class="error-indicator" style="display:none;">❌</div>
+    `;
+    return { placeholder, placeholderId };
+}
+
 
 export function initGallerySection() {
     const galleryUploadInput = document.getElementById('gallery-upload');
@@ -67,31 +82,33 @@ export function initGallerySection() {
         }
 
         for (const file of files) {
-            // Re-check limit before processing each file
-            const updatedGalleryDocSnap = await getDoc(galleryDocRef);
-            const updatedCurrentItems = updatedGalleryDocSnap.exists() ? updatedGalleryDocSnap.data().images || [] : [];
-            if (updatedCurrentItems.length >= effectiveLimit) {
-                alert(`Límite de ${effectiveLimit} fotos alcanzado. No se subirán más archivos.`);
-                break; // Exit loop
-            }
-
             if (!file.type.startsWith('image/')) {
                 alert(`Error: "${file.name}" no es una imagen válida y fue omitido.`);
                 continue;
             }
 
+            const { placeholder, placeholderId } = createUploadingPlaceholder(file);
+            galleryPreviewsDiv.appendChild(placeholder);
+
             const reader = new FileReader();
-            reader.onload = (e) => processAndUploadImage(e.target.result, file.name, currentUser.uid, effectiveLimit);
+            reader.onload = (e) => processAndUploadImage(e.target.result, file, currentUser.uid, effectiveLimit, placeholderId);
             reader.readAsDataURL(file);
         }
         galleryUploadInput.value = '';
     });
-    console.log('Gallery upload input listener initialized with Firestore limits.');
+    console.log('Gallery upload input listener initialized with placeholder logic.');
 }
 
-async function processAndUploadImage(dataUrl, fileName, userId, limit) {
-    const img = new Image();
-    img.onload = async () => {
+async function processAndUploadImage(dataUrl, file, userId, limit, placeholderId) {
+    const placeholder = document.getElementById(placeholderId);
+    try {
+        const img = new Image();
+        img.src = dataUrl;
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+        });
+
         const maxWidth = 1200, maxHeight = 1200;
         let { width, height } = img;
         if (width > maxWidth || height > maxHeight) {
@@ -110,46 +127,44 @@ async function processAndUploadImage(dataUrl, fileName, userId, limit) {
         ctx.drawImage(img, 0, 0, width, height);
         const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
-        const item = { name: fileName, type: 'image/jpeg', dataUrl: compressedDataUrl };
+        const item = { name: file.name, type: 'image/jpeg', dataUrl: compressedDataUrl };
         const galleryDocRef = doc(db, "galleries", userId);
 
-        try {
-            const docSnap = await getDoc(galleryDocRef);
-
-            if (docSnap.exists()) {
-                const existingImages = docSnap.data().images || [];
-                const isDuplicate = existingImages.some(existingItem => existingItem.dataUrl === item.dataUrl);
-
-                if (isDuplicate) {
-                    console.warn(`Attempted to add a duplicate image ("${fileName}"). Upload skipped.`);
-                    // Optionally, inform the user.
-                    // alert(`La imagen "${fileName}" ya existe en la galería y no se volverá a guardar.`);
-                    return; // Stop execution to prevent saving
-                }
-                
-                if (existingImages.length < limit) {
-                    await updateDoc(galleryDocRef, { images: arrayUnion(item) });
-                } else {
-                    throw new Error("Limit exceeded just before final write.");
-                }
-            } else {
-                await setDoc(galleryDocRef, { images: [item] });
+        const docSnap = await getDoc(galleryDocRef);
+        if (docSnap.exists()) {
+            const existingImages = docSnap.data().images || [];
+            if (existingImages.length >= limit) {
+                throw new Error("Limit exceeded just before final write.");
             }
-            console.log(`Gallery item saved for user "${userId}"`);
-            // Refresh the entire gallery from Firestore to ensure consistency
-            displayGalleryItems(userId);
-            updateGalleryCountMessage(userId);
-        } catch (e) {
-            console.error("Error saving gallery item:", e);
-            alert('Error al guardar la imagen. El límite de almacenamiento puede haber sido alcanzado.');
-            updateGalleryCountMessage(userId);
+            await updateDoc(galleryDocRef, { images: arrayUnion(item) });
+        } else {
+            await setDoc(galleryDocRef, { images: [item] });
         }
-    };
-    img.src = dataUrl;
+
+        console.log(`Gallery item saved for user "${userId}"`);
+        
+        const newImageCard = displayGalleryItem(userId, item);
+        newImageCard.classList.add('upload-success');
+        
+        placeholder.replaceWith(newImageCard);
+        
+        updateGalleryCountMessage(userId);
+
+    } catch (e) {
+        console.error("Error saving gallery item:", e);
+        if (placeholder) {
+            placeholder.classList.add('upload-error');
+            const errorIndicator = placeholder.querySelector('.error-indicator');
+            if(errorIndicator) errorIndicator.style.display = 'block';
+            const filenameDiv = placeholder.querySelector('.placeholder-filename');
+            if(filenameDiv) filenameDiv.textContent = 'Error al subir';
+        }
+        updateGalleryCountMessage(userId);
+    }
 }
 
-function displayGalleryItem(userId, item, containerDiv) {
-    if (!item.dataUrl) return; // Only guard against missing dataUrl
+function displayGalleryItem(userId, item) {
+    if (!item.dataUrl) return null;
 
     const imgContainer = document.createElement('div');
     imgContainer.className = 'gallery-item';
@@ -198,15 +213,13 @@ function displayGalleryItem(userId, item, containerDiv) {
         }
     };
     meta.appendChild(deleteButton);
-    containerDiv.appendChild(imgContainer);
+    
+    return imgContainer;
 }
 
 export async function displayGalleryItems(userId) {
-    console.log('displayGalleryItems called from:', new Error().stack);
     const galleryPreviewsDiv = document.getElementById('gallery-previews');
     if (!galleryPreviewsDiv) return;
-
-    console.log('Before clearing gallery:', galleryPreviewsDiv.innerHTML);
 
     let html = '<h3>Imágenes Guardadas</h3>';
 
@@ -229,7 +242,10 @@ export async function displayGalleryItems(userId) {
     galleryPreviewsDiv.innerHTML = html;
 
     if (galleryItems.length > 0) {
-        galleryItems.forEach(item => displayGalleryItem(userId, item, galleryPreviewsDiv));
+        galleryItems.forEach(item => {
+            const itemElement = displayGalleryItem(userId, item);
+            if(itemElement) galleryPreviewsDiv.appendChild(itemElement);
+        });
     }
 }
 

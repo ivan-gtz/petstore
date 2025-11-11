@@ -2252,3 +2252,76 @@ body.shared-view #panel-section.active {
 #user-search-button svg {
     stroke: white;
 }
+
+/* --- Upload Placeholder & Loader Styles --- */
+.upload-placeholder {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 1px dashed var(--border-color-dashed);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+    width: 100%;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.upload-placeholder .placeholder-filename {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    margin-top: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.upload-placeholder .loader {
+    border: 4px solid rgba(0,0,0,0.1);
+    border-left-color: var(--accent-color);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* State for successful upload */
+.gallery-item.upload-success {
+    animation: success-flash 1.5s ease-out;
+}
+
+@keyframes success-flash {
+    0% { box-shadow: 0 0 0 4px rgba(40, 167, 69, 0); }
+    50% { box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.5); }
+    100% { box-shadow: 0 0 0 4px rgba(40, 167, 69, 0); }
+}
+
+/* State for failed upload */
+.upload-placeholder.upload-error {
+    border-color: var(--error-color);
+    background-color: var(--info-bg-error);
+}
+
+.upload-placeholder.upload-error .loader {
+    display: none; /* Hide loader on error */
+}
+
+.upload-placeholder .error-indicator {
+    font-size: 2rem;
+    color: var(--error-color);
+    display: none; /* Hidden by default */
+}
+
+.upload-placeholder.upload-error .error-indicator {
+    display: block; /* Show on error */
+}
