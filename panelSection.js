@@ -12,7 +12,11 @@ async function getAppConfig() {
     try {
         const docSnap = await getDoc(appConfigRef);
         if (docSnap.exists()) {
-            return docSnap.data();
+            const data = docSnap.data();
+            if (!data.appName) {
+                data.appName = 'Caneko';
+            }
+            return data;
         } else {
             // Return a default structure if the document doesn't exist
             return { adminContact: '', adminWebsite: '', appName: 'Caneko' };
