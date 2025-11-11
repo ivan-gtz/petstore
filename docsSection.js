@@ -138,7 +138,7 @@ function displayDocItem(userId, item, containerDiv) {
 
     const previewButton = document.createElement('button');
     previewButton.className = 'preview-btn';
-    previewButton.textContent = 'Vista previa';
+    previewButton.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span class="btn-text">Vista previa</span>`;
     previewButton.onclick = (e) => {
         e.stopPropagation();
         const modal = document.getElementById('myModal');
@@ -160,7 +160,7 @@ function displayDocItem(userId, item, containerDiv) {
 
     const deleteButton = document.createElement('button');
     deleteButton.className = 'delete-btn';
-    deleteButton.textContent = 'Eliminar';
+    deleteButton.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg><span class="btn-text">Eliminar</span>`;
     deleteButton.onclick = async (e) => {
         e.stopPropagation();
         const confirmed = await window.showConfirmDialog('Eliminar Documento', `¿Eliminar "${escapeHTML(item.name)}"?`, { danger: true });

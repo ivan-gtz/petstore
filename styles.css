@@ -645,6 +645,46 @@ h3 {
 .docs-list .doc-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; color:var(--text-color); }
 .docs-list .doc-actions { display:flex; gap:8px; flex-shrink:0; }
 
+.docs-list .doc-actions .preview-btn {
+    background-color: var(--accent-color); /* Use accent color for preview */
+    color: #222;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.docs-list .doc-actions .preview-btn:hover {
+    background-color: #ffc34d; /* Slightly darker accent */
+    transform: translateY(-1px);
+}
+
+.docs-list .doc-actions .delete-btn {
+    background-color: var(--button-danger-bg);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.docs-list .doc-actions .delete-btn:hover {
+    background-color: var(--button-danger-hover-bg);
+    transform: translateY(-1px);
+}
+
 /* --- Forms in Sections (Settings, Users) --- */
 #settings-form, .simple-form, #admin-settings-form {
     max-width: 400px;
@@ -1132,6 +1172,36 @@ body.dark-theme .user-entry-clickable:hover {
     font-weight: normal;
     font-size: 0.9rem;
     transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+/* General style for panel buttons (used in settings, etc.) */
+.panel-button {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    margin: 5px; /* Add some margin to separate them */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    white-space: nowrap; /* Prevent text from wrapping */
+}
+
+.panel-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.panel-button.whatsapp-button {
+    background-color: var(--whatsapp-button-bg);
+    color: white;
+}
+
+.panel-button.location-button {
+    background-color: var(--location-button-bg);
+    color: white;
 }
 
 .panel-info p a.panel-button:hover {
@@ -1914,15 +1984,17 @@ body:not(.shared-view) .floating-3d-icons { display: none; } /* Only show in sha
 
     .panel-info p {
         display: flex;
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
     }
     .panel-info p strong {
-        margin-bottom: 5px;
+        margin-bottom: 0;
+        margin-right: 5px;
     }
     .panel-info p a.panel-button {
-        margin-left: 0;
-        margin-top: 5px;
+        margin-left: 5px;
+        margin-top: 0;
     }
     .panel-info p.lost-status {
         flex-direction: column;
@@ -1944,6 +2016,28 @@ body:not(.shared-view) .floating-3d-icons { display: none; } /* Only show in sha
     }
     .modal-document-content {
         width: 90%;
+    }
+
+    #admin-whatsapp-button-container,
+    #main-website-button-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px; /* Space between buttons */
+        align-items: center; /* Center buttons horizontally */
+    }
+    .panel-button {
+        width: 100%; /* Make buttons take full width on mobile */
+        max-width: 280px; /* Limit max width for aesthetics */
+    }
+
+    .docs-list .doc-actions .btn-text {
+        display: none;
+    }
+
+    .docs-list .doc-actions .preview-btn,
+    .docs-list .doc-actions .delete-btn {
+        padding: 8px;
+        gap: 0;
     }
 }
 
