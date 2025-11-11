@@ -347,6 +347,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             window.open(cardUrl, '_blank');
             console.log(`Opened shared view for user: ${currentUser.uid}`);
+
+            // After opening, navigate the main app back to the panel
+            showSection('panel-section', sectionCallbacks);
+            history.pushState(null, '', `${baseUrl}#panel-section`);
         });
         console.log('"Tarjeta" link listener initialized.');
     } else {
