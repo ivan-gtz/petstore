@@ -103,7 +103,7 @@ export async function displayPetInPanel(username) {
         panelWebsiteLink.title = `Ir al Sitio Web Principal de ${currentAppName}`;
         panelWebsiteLink.classList.remove('link-disabled');
     } else {
-        panelWebsiteLink.href = '#';
+        panelWebsiteLink.href = '/';
         panelWebsiteLink.style.cursor = 'default';
         panelWebsiteLink.title = 'Sitio web principal no configurado';
         panelWebsiteLink.classList.add('link-disabled');
@@ -280,7 +280,7 @@ async function showNoPetDataInPanel() {
         panelWebsiteLink.title = `Ir al Sitio Web Principal de ${currentAppName}`;
         panelWebsiteLink.classList.remove('link-disabled');
     } else {
-        panelWebsiteLink.href = '#';
+        panelWebsiteLink.href = '/';
         panelWebsiteLink.style.cursor = 'default';
         panelWebsiteLink.title = 'Sitio web principal no configurado';
         panelWebsiteLink.classList.add('link-disabled');

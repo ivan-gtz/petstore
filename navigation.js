@@ -41,7 +41,7 @@ export function showSection(targetId, sectionCallbacks = {}) {
          const panelSection = document.getElementById('panel-section');
          if (panelSection) {
               // Use history.replaceState to prevent the denied section from being in the history
-              window.history.replaceState(null, '', `#panel-section`);
+              window.history.replaceState(null, '', `/panel-section`);
               showSection('panel-section', sectionCallbacks); // Redirect to panel
          } else {
                // Fallback if panel is also missing
@@ -75,7 +75,7 @@ export function showSection(targetId, sectionCallbacks = {}) {
     }
 }
 
-export function initNavigation(sectionCallbacks = {}) {
+export function initNavigation(sectionCallbacks = {}, handleLogout = () => {}) {
     // If the body has the 'shared-view' class, navigation initialization is skipped
     if (document.body.classList.contains('shared-view')) {
         console.log('Navigation initialization skipped in shared view.');
@@ -106,6 +106,11 @@ export function initNavigation(sectionCallbacks = {}) {
             event.preventDefault();
             const targetId = event.currentTarget.dataset.target;
 
+            if (targetId === 'logout') {
+                handleLogout();
+                return;
+            }
+
             // Check admin status before allowing navigation click for admin-only sections
             const adminOnlySections = ['clients-section', 'users-section', 'control-section']; 
             if (adminOnlySections.includes(targetId) && !isAdmin()) {
@@ -116,25 +121,30 @@ export function initNavigation(sectionCallbacks = {}) {
 
 
             if (targetId) {
-                // Update URL hash without triggering popstate immediately
-                // Remove any existing query parameters before adding hash
-                const baseUrl = window.location.origin + window.location.pathname;
-                history.pushState(null, '', `${baseUrl}#${targetId}`);
+                // Update URL with a path-based approach
+                const newPath = `/${targetId}`;
+                history.pushState(null, '', newPath);
                 showSection(targetId, sectionCallbacks);
             }
         });
     });
 
-    // Determine and show initial active section based on hash or default
-    let initialSectionId = window.location.hash ? window.location.hash.substring(1) : (initialActiveSection ? initialActiveSection.id : defaultSectionId);
+    // Determine and show initial active section based on path or default
+    const path = window.location.pathname;
+    let initialSectionId = path.substring(1) || (initialActiveSection ? initialActiveSection.id : defaultSectionId);
 
-    // Check if the initial hash points to an admin-only section and the user is not admin, redirect to panel
+    // If the path is just '/', default to the defaultSectionId
+    if (path === '/') {
+        initialSectionId = defaultSectionId;
+    }
+
+    // Check if the initial path points to an admin-only section and the user is not admin, redirect to panel
     const adminOnlySections = ['clients-section', 'users-section', 'control-section']; 
     if (adminOnlySections.includes(initialSectionId) && !isAdmin()) {
          console.warn(`Redirecting non-admin user from ${initialSectionId} section on initial load.`);
          initialSectionId = defaultSectionId; // Change target to panel
-         // Update URL hash to reflect the redirect
-         window.history.replaceState(null, '', `#${initialSectionId}`);
+         // Update URL to reflect the redirect
+         window.history.replaceState(null, '', `/${initialSectionId}`);
     }
 
 
@@ -151,7 +161,8 @@ export function initNavigation(sectionCallbacks = {}) {
               console.log('Popstate ignored in shared view.');
               return;
          }
-        let targetId = window.location.hash ? window.location.hash.substring(1) : defaultSectionId;
+        const path = window.location.pathname;
+        let targetId = path.substring(1) || defaultSectionId;
 
         // Check admin status on popstate for admin-only sections
          const adminOnlySections = ['clients-section', 'users-section', 'control-section']; 
@@ -159,7 +170,7 @@ export function initNavigation(sectionCallbacks = {}) {
               console.warn(`Popstate to ${targetId} section blocked: User is not admin.`);
               // Redirect popstate back to panel
               targetId = defaultSectionId;
-              window.history.replaceState(null, '', `#${targetId}`); // Replace state to prevent infinite loop
+              window.history.replaceState(null, '', `/${targetId}`); // Replace state to prevent infinite loop
          }
 
         showSection(targetId, sectionCallbacks);

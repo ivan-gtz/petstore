@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', async () => {
          }
          // Optional: Clear hash and query parameters from URL on logout
          // Use replaceState to avoid adding logout to browser history
-         window.history.replaceState({}, '', window.location.origin + window.location.pathname);
+         window.history.replaceState({}, '', '/');
          console.log('Logout complete. Showing login screen.');
 
          // Clear any loaded data in sections for the previous user (optional but good practice)
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.warn("'Tarjeta' link user status check is not yet migrated to Firebase.");
             // For now, we will assume the user is active if they have a shared link.
             // This will be updated later.
-            const baseUrl = window.location.origin + window.location.pathname;
+            const baseUrl = window.location.origin;
             const cardUrl = `${baseUrl}?view=shared&user=${encodeURIComponent(currentUser.uid)}`;
 
             window.open(cardUrl, '_blank');
@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // After opening, navigate the main app back to the panel
             showSection('panel-section', sectionCallbacks);
-            history.pushState(null, '', `${baseUrl}#panel-section`);
+            history.pushState(null, '', `/panel-section`);
         });
         console.log('"Tarjeta" link listener initialized.');
     } else {
@@ -390,21 +390,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Initialize navigation (including hash handling and sidebar links)
             // This function itself checks if shared view is active, but we've already exited
             // for shared view above, so it should proceed normally here.
-            initNavigation(sectionCallbacks);
+            initNavigation(sectionCallbacks, handleLogout);
             console.log('Main app UI setup complete. Navigation initialized.');
 
-            // Attach logout listeners (only needed in main app view)
-            const sidebarLogoutButton = document.getElementById('logout-button');
-            const settingsLogoutButton = document.getElementById('settings-logout-button');
+            // Explicitly navigate to the panel section after login
+            showSection('panel-section', sectionCallbacks);
+            history.pushState(null, '', '/panel-section');
 
-            if (sidebarLogoutButton) {
-                // Remove existing listener to prevent duplicates (though setupMainApp is only called once)
-                sidebarLogoutButton.removeEventListener('click', handleLogout);
-                sidebarLogoutButton.addEventListener('click', handleLogout);
-                console.log('Sidebar logout listener attached.');
-            } else {
-                console.warn('Sidebar logout button (#logout-button) not found.');
-            }
+            // Attach logout listeners (only needed in main app view)
+            const settingsLogoutButton = document.getElementById('settings-logout-button');
 
             if (settingsLogoutButton) {
                 // Remove existing listener to prevent duplicates
