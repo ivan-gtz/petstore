@@ -15,7 +15,7 @@ import { initClientsSection, displayPetsWithFilter } from './clientsSection.js';
 // Import displayPetInPanel specifically for use in the section callback map
 import { displayPetInPanel } from './panelSection.js';
 
-import { initControlSection } from './controlSection.js'; // <-- new import
+import { initControlSection, loadControlSection } from './controlSection.js'; // <-- new import
 
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { db } from './firebase-init.js';
@@ -322,7 +322,8 @@ document.addEventListener('DOMContentLoaded', async () => {
              // displayAllPets does NOT need a specific username, it iterates all users
              // Use the renamed function displayPetsWithFilter and default to 'all' filter
              displayPetsWithFilter('all');
-        }
+        },
+        'control-section': loadControlSection
     };
 
     // Get the new "Tarjeta" link (only relevant for normal app view)

@@ -15,28 +15,15 @@ function escapeHTML(str) {
 
 // --- Firestore Helper Functions ---
 
-// Fetches the effective gallery limit for the current user
-async function getGalleryLimitForCurrentUser() {
-    const currentUser = getLoginState();
-    if (!currentUser || !currentUser.uid) {
-        return FALLBACK_GALLERY_LIMIT;
-    }
-
-    // Fetch user-specific limit
-    const userRef = doc(db, "users", currentUser.uid);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists() && typeof userSnap.data().galleryLimit === 'number') {
-        return userSnap.data().galleryLimit;
-    }
-
-    // Fetch global limit if no user-specific one is found
+// Fetches the global gallery limit
+async function getGlobalLimits() {
     const settingsRef = doc(db, "settings", "globalLimits");
     const settingsSnap = await getDoc(settingsRef);
     if (settingsSnap.exists() && typeof settingsSnap.data().galleryLimit === 'number') {
-        return settingsSnap.data().galleryLimit;
+        return { galleryLimit: settingsSnap.data().galleryLimit };
     }
-
-    return FALLBACK_GALLERY_LIMIT;
+    // Return just the fallback if the document doesn't exist or limit is not a number
+    return { galleryLimit: FALLBACK_GALLERY_LIMIT };
 }
 
 export function initGallerySection() {
@@ -69,7 +56,8 @@ export function initGallerySection() {
         const galleryDocSnap = await getDoc(galleryDocRef);
         const currentItems = galleryDocSnap.exists() ? galleryDocSnap.data().images || [] : [];
         
-        const effectiveLimit = await getGalleryLimitForCurrentUser();
+        const limits = await getGlobalLimits();
+        const effectiveLimit = limits.galleryLimit;
         const availableSlots = effectiveLimit - currentItems.length;
 
         if (files.length > availableSlots) {
@@ -260,7 +248,8 @@ export async function updateGalleryCountMessage(userId) {
     const galleryDocSnap = await getDoc(galleryDocRef);
     const count = galleryDocSnap.exists() ? (galleryDocSnap.data().images || []).length : 0;
     
-    const effectiveLimit = await getGalleryLimitForCurrentUser();
+    const limits = await getGlobalLimits();
+    const effectiveLimit = limits.galleryLimit;
     const remaining = effectiveLimit - count;
 
     if (count >= effectiveLimit) {

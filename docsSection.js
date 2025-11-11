@@ -15,26 +15,15 @@ function escapeHTML(str) {
 
 // --- Firestore Helper Functions ---
 
-// Fetches the effective document limit for the current user
-async function getDocLimitForCurrentUser() {
-    const currentUser = getLoginState();
-    if (!currentUser || !currentUser.uid) {
-        return FALLBACK_DOC_LIMIT;
-    }
-
-    const userRef = doc(db, "users", currentUser.uid);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists() && typeof userSnap.data().docLimit === 'number') {
-        return userSnap.data().docLimit;
-    }
-
+// Fetches the global document limit
+async function getGlobalLimits() {
     const settingsRef = doc(db, "settings", "globalLimits");
     const settingsSnap = await getDoc(settingsRef);
     if (settingsSnap.exists() && typeof settingsSnap.data().docLimit === 'number') {
-        return settingsSnap.data().docLimit;
+        return { docLimit: settingsSnap.data().docLimit };
     }
-
-    return FALLBACK_DOC_LIMIT;
+    // Return just the fallback if the document doesn't exist or limit is not a number
+    return { docLimit: FALLBACK_DOC_LIMIT };
 }
 
 export function initDocsSection() {
@@ -60,7 +49,8 @@ export function initDocsSection() {
         const docSnap = await getDoc(docRef);
         const currentDocs = docSnap.exists() ? docSnap.data().docs || [] : [];
         
-        const effectiveLimit = await getDocLimitForCurrentUser();
+        const limits = await getGlobalLimits();
+        const effectiveLimit = limits.docLimit;
         const availableSlots = effectiveLimit - currentDocs.length;
 
         if (files.length > availableSlots) {
@@ -229,7 +219,8 @@ async function updateDocsCountMessage(userId) {
     const docSnap = await getDoc(docRef);
     const count = docSnap.exists() ? (docSnap.data().docs || []).length : 0;
     
-    const effectiveLimit = await getDocLimitForCurrentUser();
+    const limits = await getGlobalLimits();
+    const effectiveLimit = limits.docLimit;
     const remaining = effectiveLimit - count;
 
     if (count >= effectiveLimit) {
