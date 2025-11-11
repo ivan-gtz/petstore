@@ -640,10 +640,9 @@ h3 {
     box-shadow: 0 6px 18px rgba(0,0,0,0.04); transition: transform 200ms ease, box-shadow 200ms ease;
 }
 .docs-list .doc-card:hover { transform: translateY(-6px); box-shadow: 0 18px 36px rgba(0,0,0,0.08); }
-.docs-list .doc-left { display:flex; align-items:center; gap:12px; flex:1; min-width:0; }
-.docs-list .doc-left .doc-icon { font-size:1.5rem; color:var(--accent-color); }
+        .docs-list .doc-left { display:flex; align-items:center; gap:1px; flex:1; min-width:0; } /* Reduced gap for mobile */.docs-list .doc-left .doc-icon { font-size:1rem; color:var(--accent-color); }
 .docs-list .doc-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; color:var(--text-color); }
-.docs-list .doc-actions { display:flex; gap:8px; flex-shrink:0; }
+.docs-list .doc-actions { display:flex; gap:2px; flex-shrink:0; }
 
 .docs-list .doc-actions .preview-btn {
     background-color: var(--accent-color); /* Use accent color for preview */
@@ -1952,7 +1951,7 @@ body:not(.shared-view) .floating-3d-icons { display: none; } /* Only show in sha
 
     .container {
         margin: 1em auto;
-        padding: 15px;
+        padding: 15px 5px; /* Reduced horizontal padding */
     }
 
     h1 {
@@ -1960,13 +1959,16 @@ body:not(.shared-view) .floating-3d-icons { display: none; } /* Only show in sha
         margin-bottom: 1.5rem;
     }
 
-    .pet-profile, .panel-pet-display, #gallery-section, #docs-section, #settings-section, #users-section {
-        padding: 20px;
-        max-width: 95%;
-        box-sizing: border-box;
-    }
-
-    .panel-pet-display {
+            .pet-profile, .panel-pet-display, #gallery-section, #settings-section, #users-section {
+                padding: 20px;
+                max-width: 95%;
+                box-sizing: border-box;
+            }
+                    #docs-section {
+                        padding: 20px 0px; /* Removed horizontal padding for more width */
+                        max-width: 95%;
+                        box-sizing: border-box;
+                    }    .panel-pet-display {
         flex-direction: column;
         align-items: center;
         gap: 20px;
@@ -2014,10 +2016,10 @@ body:not(.shared-view) .floating-3d-icons { display: none; } /* Only show in sha
         max-width: 95%;
         max-height: 80%;
     }
-    .modal-document-content {
-        width: 90%;
-    }
-
+            .modal-document-content {
+                width: 90%;
+                padding: 15px; /* Adjusted padding for mobile */
+            }
     #admin-whatsapp-button-container,
     #main-website-button-container {
         display: flex;
@@ -2034,14 +2036,23 @@ body:not(.shared-view) .floating-3d-icons { display: none; } /* Only show in sha
         display: none;
     }
 
-    .docs-list .doc-actions .preview-btn,
-    .docs-list .doc-actions .delete-btn {
-        padding: 8px;
-        gap: 0;
-    }
-}
+                                    .docs-list .doc-card {
 
-/* --- Specific styles for shared view --- */
+                                        padding: 1px 0; /* Removed horizontal padding */
+
+                                        gap: 1px;
+
+                                    }        .docs-list .doc-actions .preview-btn,
+        .docs-list .doc-actions .delete-btn {
+            padding: 4px; /* Reduced padding for smaller buttons */
+            gap: 0;
+        }
+        .docs-list .doc-left .doc-icon {
+            font-size: 1rem; /* Reduced font size for the icon */
+        }
+                            .docs-list .doc-name {
+                                font-size: 0.70rem; /* Further reduced font size for the name */
+                            }                }/* --- Specific styles for shared view --- */
 body.shared-view {
     background: var(--background-color); 
     display: flex;
