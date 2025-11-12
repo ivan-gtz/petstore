@@ -118,6 +118,8 @@ export async function displayPetInPanel(username) {
     const petDoc = await getDoc(petDocRef);
     const petData = petDoc.exists() ? petDoc.data() : null;
 
+    console.log('Displaying pet data in panel:', petData); // Debugging line
+
     if (petData && petData.name) {
         // Hide no data message, show info div (the parent container)
         panelNoDataMsg.style.display = 'none';

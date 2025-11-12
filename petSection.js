@@ -38,6 +38,8 @@ export async function loadPetForEditing(username) {
     const petDoc = await getDoc(petDocRef);
     const petData = petDoc.exists() ? petDoc.data() : null;
 
+    console.log('Loading pet data:', petData); // Debugging line
+
     if (petData) {
         petNameInput.value = petData.name || '';
         petBreedInput.value = petData.breed || '';
@@ -126,6 +128,8 @@ export function initPetSection() {
                  alert('Por favor, completa los campos obligatorios: Nombre, Raza, y Edad.');
                  return;
             }
+
+            console.log('Saving pet data:', petData); // Debugging line
 
             const petDocRef = doc(db, "pets", currentUser.uid);
             await setDoc(petDocRef, petData);

@@ -127,30 +127,23 @@ function displayDocItem(userId, item, containerDiv) {
     previewButton.className = 'preview-btn';
     previewButton.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span class="btn-text">Vista previa</span>`;
     
-    const isMobileDevice = () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
     previewButton.onclick = (e) => {
         e.stopPropagation();
 
-        if (isMobileDevice()) {
-            // On mobile, open the PDF in a new tab, as iframes are unreliable
-            window.open(item.dataUrl, '_blank');
-        } else {
-            // On desktop, use the modal with an iframe
-            const modal = document.getElementById('myModal');
-            const modalDocContent = document.getElementById('modalDocument');
-            const modalImg = document.getElementById('modalImage');
+        // Use the modal with an iframe for all devices
+        const modal = document.getElementById('myModal');
+        const modalDocContent = document.getElementById('modalDocument');
+        const modalImg = document.getElementById('modalImage');
 
-            if (!modal || !modalDocContent || !modalImg) {
-                console.error("Modal elements not found, cannot open preview.");
-                return;
-            }
-            
-            modalImg.style.display = 'none';
-            modalDocContent.style.display = 'block';
-            modalDocContent.innerHTML = `<iframe src="${item.dataUrl}" style="width:100%;height:100%;border:0;" title="${escapeHTML(item.name)}"></iframe>`;
-            modal.style.display = 'block';
+        if (!modal || !modalDocContent || !modalImg) {
+            console.error("Modal elements not found, cannot open preview.");
+            return;
         }
+        
+        modalImg.style.display = 'none';
+        modalDocContent.style.display = 'block';
+        modalDocContent.innerHTML = `<iframe src="${item.dataUrl}" style="width:100%;height:100%;border:0;" title="${escapeHTML(item.name)}"></iframe>`;
+        modal.style.display = 'block';
     };
     actionsDiv.appendChild(previewButton);
 
