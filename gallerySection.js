@@ -105,8 +105,12 @@ export function initGallerySection() {
         }
 
         for (const file of files) {
-            if (!file.type.startsWith('image/')) {
-                alert(`Error: "${file.name}" no es una imagen válida y fue omitido.`);
+            const acceptedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const acceptedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+            const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+
+            if (!acceptedMimeTypes.includes(file.type) && !acceptedExtensions.includes(fileExtension)) {
+                alert(`Error: "${file.name}" no es un tipo de imagen válido y fue omitido.`);
                 continue;
             }
 
