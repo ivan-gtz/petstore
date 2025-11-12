@@ -1,7 +1,7 @@
 // --- Galería Section Logic ---
 import { getLoginState } from './loginHandler.js';
 import { db } from './firebase-init.js';
-import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { doc, getDoc, setDoc, updateDoc, runTransaction, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
 const FALLBACK_GALLERY_LIMIT = 15;
 const MAX_IMAGE_SIZE_BYTES = 1 * 1024 * 1024; // 1MB
@@ -92,12 +92,12 @@ export function initGallerySection() {
             return;
         }
 
-        const galleryDocRef = doc(db, "galleries", currentUser.uid);
-        const galleryDocSnap = await getDoc(galleryDocRef);
-        const currentItems = galleryDocSnap.exists() ? galleryDocSnap.data().images || [] : [];
+        const imagesRef = collection(db, "galleries", currentUser.uid, "images");
+        const snapshot = await getDocs(imagesRef);
+        const currentItemsCount = snapshot.size;
         
         const effectiveLimit = await getEffectiveGalleryLimit(currentUser.uid);
-        const availableSlots = effectiveLimit - currentItems.length;
+        const availableSlots = effectiveLimit - currentItemsCount;
 
         if (files.length > availableSlots) {
             alert(`No puedes subir más de ${availableSlots} archivo(s). Límite de ${effectiveLimit} alcanzado.`);
@@ -166,28 +166,22 @@ async function processAndUploadImage(dataUrl, file, userId, placeholderId) {
             type: 'image/jpeg', 
             dataUrl: compressedDataUrl 
         };
-        const galleryDocRef = doc(db, "galleries", userId);
 
-        // Use a transaction to atomically update the document
-        await runTransaction(db, async (transaction) => {
-            const limit = await getEffectiveGalleryLimit(userId);
-            const docSnap = await transaction.get(galleryDocRef);
+        // Path to the new document in the 'images' subcollection
+        const newImageRef = doc(db, "galleries", userId, "images", item.id);
 
-            if (!docSnap.exists()) {
-                transaction.set(galleryDocRef, { images: [item] });
-                return;
-            }
+        // Check the limit before writing
+        const imagesCollectionRef = collection(db, "galleries", userId, "images");
+        const currentSnapshot = await getDocs(imagesCollectionRef);
+        const currentCount = currentSnapshot.size;
+        const limit = await getEffectiveGalleryLimit(userId);
 
-            const existingImages = docSnap.data().images || [];
-            if (existingImages.length >= limit) {
-                // We throw an error here to abort the transaction.
-                // This will be caught by the outer catch block.
-                throw new Error("Limit exceeded");
-            }
+        if (currentCount >= limit) {
+            throw new Error("Limit exceeded just before final write.");
+        }
 
-            const newImages = [...existingImages, item];
-            transaction.update(galleryDocRef, { images: newImages });
-        });
+        // Atomically set the new document
+        await setDoc(newImageRef, item);
 
         console.log(`Gallery item saved for user "${userId}"`);
         
@@ -250,18 +244,12 @@ function displayGalleryItem(userId, item) {
         const confirmed = await window.showConfirmDialog('Eliminar Imagen', `¿Eliminar "${escapeHTML(item.name)}"?`, { danger: true });
         if (!confirmed) return;
         
-        const galleryDocRef = doc(db, "galleries", userId);
+        // Reference to the specific document in the subcollection
+        const imageDocRef = doc(db, "galleries", userId, "images", item.id);
+        
         try {
-            await runTransaction(db, async (transaction) => {
-                const docSnap = await transaction.get(galleryDocRef);
-                if (!docSnap.exists()) {
-                    return; // Nothing to delete
-                }
-                const allImages = docSnap.data().images || [];
-                // Filter out the image with the specific ID
-                const newImages = allImages.filter(img => img.id !== item.id);
-                transaction.update(galleryDocRef, { images: newImages });
-            });
+            // Simply delete the document
+            await deleteDoc(imageDocRef);
 
             imgContainer.remove();
             updateGalleryCountMessage(userId);
@@ -275,35 +263,51 @@ function displayGalleryItem(userId, item) {
     return imgContainer;
 }
 
+let isDisplayingGallery = false;
+
 export async function displayGalleryItems(userId) {
-    const galleryPreviewsDiv = document.getElementById('gallery-previews');
-    if (!galleryPreviewsDiv) return;
-
-    let html = '<h3>Imágenes Guardadas</h3>';
-
-    if (!userId) {
-        html += '<p>Error: Usuario no especificado.</p>';
-        galleryPreviewsDiv.innerHTML = html;
+    if (isDisplayingGallery) {
+        console.warn("displayGalleryItems called while already in progress. Aborting.");
         return;
     }
+    isDisplayingGallery = true;
 
-    const galleryDocRef = doc(db, "galleries", userId);
-    const galleryDocSnap = await getDoc(galleryDocRef);
-    const galleryItems = galleryDocSnap.exists() ? galleryDocSnap.data().images || [] : [];
+    try {
+        const galleryPreviewsDiv = document.getElementById('gallery-previews');
+        if (!galleryPreviewsDiv) return;
 
-    updateGalleryCountMessage(userId);
+        // --- Robust Clearing ---
+        galleryPreviewsDiv.innerHTML = '';
+        const header = document.createElement('h3');
+        header.textContent = 'Imágenes Guardadas';
+        galleryPreviewsDiv.appendChild(header);
+        // --- End of Clearing ---
 
-    if (galleryItems.length === 0) {
-        html += '<p>Aún no hay imágenes en la galería.</p>';
-    }
-    
-    galleryPreviewsDiv.innerHTML = html;
+        if (!userId) {
+            const errorP = document.createElement('p');
+            errorP.textContent = 'Error: Usuario no especificado.';
+            galleryPreviewsDiv.appendChild(errorP);
+            return;
+        }
 
-    if (galleryItems.length > 0) {
-        galleryItems.forEach(item => {
-            const itemElement = displayGalleryItem(userId, item);
-            if(itemElement) galleryPreviewsDiv.appendChild(itemElement);
-        });
+        const imagesRef = collection(db, "galleries", userId, "images");
+        const snapshot = await getDocs(imagesRef);
+        const galleryItems = snapshot.docs.map(doc => doc.data());
+
+        updateGalleryCountMessage(userId);
+
+        if (galleryItems.length === 0) {
+            const noImagesP = document.createElement('p');
+            noImagesP.textContent = 'Aún no hay imágenes en la galería.';
+            galleryPreviewsDiv.appendChild(noImagesP);
+        } else {
+            galleryItems.forEach(item => {
+                const itemElement = displayGalleryItem(userId, item);
+                if (itemElement) galleryPreviewsDiv.appendChild(itemElement);
+            });
+        }
+    } finally {
+        isDisplayingGallery = false;
     }
 }
 
@@ -318,9 +322,9 @@ export async function updateGalleryCountMessage(userId) {
         return;
     }
 
-    const galleryDocRef = doc(db, "galleries", userId);
-    const galleryDocSnap = await getDoc(galleryDocRef);
-    const count = galleryDocSnap.exists() ? (galleryDocSnap.data().images || []).length : 0;
+    const imagesRef = collection(db, "galleries", userId, "images");
+    const snapshot = await getDocs(imagesRef);
+    const count = snapshot.size;
     
     const effectiveLimit = await getEffectiveGalleryLimit(userId);
     const remaining = effectiveLimit - count;
