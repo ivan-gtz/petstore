@@ -66,6 +66,15 @@ export function initGallerySection() {
         return;
     }
 
+    // Add a visual reminder for image size limit
+    const sizeReminderSpan = document.createElement('span');
+    sizeReminderSpan.textContent = ` (Máx. ${(MAX_IMAGE_SIZE_BYTES / (1024 * 1024)).toFixed(0)}MB por imagen)`;
+    sizeReminderSpan.style.fontSize = '0.8em';
+    sizeReminderSpan.style.color = '#888';
+    if (galleryUploadInput.parentNode) {
+        galleryUploadInput.parentNode.insertBefore(sizeReminderSpan, galleryUploadInput.nextSibling);
+    }
+
     const clearBtn = document.getElementById('gallery-clear-btn');
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
