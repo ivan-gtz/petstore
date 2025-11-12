@@ -153,11 +153,33 @@ export function initControlSection() {
     });
 }
 
-export function loadControlSection() {
+export async function loadControlSection() {
+    const galleryInput = document.getElementById('gallery-limit-input');
+    const docsInput = document.getElementById('docs-limit-input');
     const userSelect = document.getElementById('control-user-select');
+
+    // Reset dropdown to show global view
     if (userSelect) {
-        // Refresh the user list and reset the view to global
         userSelect.value = "";
-        userSelect.dispatchEvent(new Event('change'));
+    }
+
+    // Directly populate the inputs with global limits
+    if (galleryInput && docsInput) {
+        try {
+            const limits = await getGlobalLimits();
+            galleryInput.value = limits.galleryLimit;
+            docsInput.value = limits.docLimit;
+        } catch (error) {
+            console.error("Failed to load global limits into control section inputs:", error);
+            // Optionally show an error message to the user
+        }
+    }
+    
+    // Also refresh the user stats display for the global view
+    const galleryCountP = document.getElementById('control-user-gallery-count');
+    const docsCountP = document.getElementById('control-user-docs-count');
+    if (galleryCountP && docsCountP) {
+        galleryCountP.textContent = 'Fotos: N/A (Global)';
+        docsCountP.textContent = 'Documentos: N/A (Global)';
     }
 }
