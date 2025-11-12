@@ -635,13 +635,14 @@ h3 {
 #docs-section .docs-upload-area:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); border-color: var(--accent-color); }
 #docs-section .doc-upload-icon { color: var(--accent-color); filter: drop-shadow(0 6px 12px rgba(0,0,0,0.06)); }
 .docs-list .doc-card {
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    display:flex; align-items:center; justify-content:flex-start; gap:12px;
     padding:12px; margin:10px 0; border-radius:10px; background:var(--card-bg); border:1px solid var(--card-border);
     box-shadow: 0 6px 18px rgba(0,0,0,0.04); transition: transform 200ms ease, box-shadow 200ms ease;
 }
 .docs-list .doc-card:hover { transform: translateY(-6px); box-shadow: 0 18px 36px rgba(0,0,0,0.08); }
-        .docs-list .doc-left { display:flex; align-items:center; gap:1px; flex:1; min-width:0; } /* Reduced gap for mobile */.docs-list .doc-left .doc-icon { font-size:1rem; color:var(--accent-color); }
-.docs-list .doc-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; color:var(--text-color); }
+.docs-list .doc-left { display:flex; align-items:center; flex:1; min-width:0; gap: 12px; }
+.docs-list .doc-left .doc-icon { font-size:1rem; color:var(--accent-color); margin: 0; padding: 0; }
+.docs-list .doc-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; color:var(--text-color); margin: 0; padding: 0; }
 .docs-list .doc-actions { display:flex; gap:2px; flex-shrink:0; }
 
 .docs-list .doc-actions .preview-btn {
@@ -2055,7 +2056,11 @@ body:not(.shared-view) .floating-3d-icons { display: none; } /* Only show in sha
         }
                             .docs-list .doc-name {
                                 font-size: 0.70rem; /* Further reduced font size for the name */
-                            }                }/* --- Specific styles for shared view --- */
+                            }
+    .docs-list .doc-card {
+        justify-content: space-between;
+    }
+                }/* --- Specific styles for shared view --- */
 body.shared-view {
     background: var(--background-color); 
     display: flex;

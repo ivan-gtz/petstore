@@ -113,13 +113,10 @@ function displayDocItem(userId, item, containerDiv) {
     docIcon.textContent = '📄';
     docLeft.appendChild(docIcon);
 
-    const docLink = document.createElement('a');
-    docLink.href = item.dataUrl;
-    docLink.target = '_blank';
-    docLink.title = `Abrir "${item.name}"`;
-    docLink.textContent = escapeHTML(item.name);
-    docLink.className = 'doc-name';
-    docLeft.appendChild(docLink);
+    const docName = document.createElement('span');
+    docName.textContent = escapeHTML(item.name);
+    docName.className = 'doc-name';
+    docLeft.appendChild(docName);
     
     docEntryWrapper.appendChild(docLeft);
 
@@ -136,8 +133,7 @@ function displayDocItem(userId, item, containerDiv) {
         const modalImg = document.getElementById('modalImage');
 
         if (!modal || !modalDocContent || !modalImg) {
-            console.error("Modal elements not found, opening in new tab as fallback.");
-            window.open(item.dataUrl, '_blank');
+            console.error("Modal elements not found, cannot open preview.");
             return;
         }
         
@@ -168,6 +164,11 @@ function displayDocItem(userId, item, containerDiv) {
     };
     actionsDiv.appendChild(deleteButton);
     docEntryWrapper.appendChild(actionsDiv);
+
+    docEntryWrapper.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
 
     containerDiv.appendChild(docEntryWrapper);
 }
