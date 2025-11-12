@@ -1338,6 +1338,8 @@ body.dark-theme .user-entry-clickable:hover {
 .confirm-modal {
     position: fixed;
     inset: 0;
+    height: 100vh; /* Ensure it takes full viewport height */
+    width: 100vw;  /* Ensure it takes full viewport width */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1355,6 +1357,7 @@ body.dark-theme .user-entry-clickable:hover {
 .confirm-box {
     width: 90%;
     max-width: 420px;
+    margin: auto; /* Ensure it respects flex centering */
     background: linear-gradient(180deg, rgba(255,249,236,1), var(--surface-color));
     color: var(--text-color);
     border-radius: 12px;
