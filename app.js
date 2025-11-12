@@ -423,3 +423,84 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('No user found in session.');
     }
 });
+
+// --- PDF.js Rendering Logic ---
+
+// Configure the PDF.js worker
+if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+}
+
+/**
+ * Renders a PDF inside a dedicated container using <canvas> elements.
+ * @param {string} pdfUrl - The URL of the PDF file to render.
+ */
+async function renderPdfInCanvas(pdfUrl) {
+    const viewerContainer = document.getElementById('pdf-viewer-container');
+    const pagesContainer = document.getElementById('pdf-pages');
+
+    // Clean up previous content and show the viewer
+    pagesContainer.innerHTML = '';
+    viewerContainer.style.display = 'block';
+
+    try {
+        // Show a loading indicator
+        pagesContainer.innerHTML = '<p style="color: white; text-align: center;">Cargando PDF...</p>';
+
+        // Load the PDF document
+        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        const pdf = await loadingTask.promise;
+
+        // Clear the loading message
+        pagesContainer.innerHTML = '';
+
+        // Loop through each page and render it
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            
+            const scale = 1.5;
+            const viewport = page.getViewport({ scale: scale });
+
+            // Create a canvas for each page
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            canvas.style.display = 'block';
+            canvas.style.marginBottom = '10px';
+
+            // Append the canvas to the container
+            pagesContainer.appendChild(canvas);
+
+            // Render the page into the canvas
+            const renderContext = {
+                canvasContext: context,
+                viewport: viewport
+            };
+            await page.render(renderContext).promise;
+        }
+
+    } catch (error) {
+        console.error('Error rendering PDF:', error);
+        pagesContainer.innerHTML = `<p style="color: white; text-align: center;">Error al cargar el PDF. Por favor, intenta de nuevo. Detalles: ${error.message}</p>`;
+    }
+}
+
+// Make the function globally available so other modules can call it
+window.renderPdfInCanvas = renderPdfInCanvas;
+
+// Add event listener for the close button on the PDF viewer
+const closePdfButton = document.getElementById('close-pdf-viewer');
+if (closePdfButton) {
+    closePdfButton.addEventListener('click', () => {
+        const viewerContainer = document.getElementById('pdf-viewer-container');
+        if (viewerContainer) {
+            viewerContainer.style.display = 'none';
+            // Also clear the pages to free up memory
+            const pagesContainer = document.getElementById('pdf-pages');
+            if(pagesContainer) {
+                pagesContainer.innerHTML = '';
+            }
+        }
+    });
+}

@@ -129,21 +129,14 @@ function displayDocItem(userId, item, containerDiv) {
     
     previewButton.onclick = (e) => {
         e.stopPropagation();
-
-        // Use the modal with an iframe for all devices
-        const modal = document.getElementById('myModal');
-        const modalDocContent = document.getElementById('modalDocument');
-        const modalImg = document.getElementById('modalImage');
-
-        if (!modal || !modalDocContent || !modalImg) {
-            console.error("Modal elements not found, cannot open preview.");
-            return;
+        // Call the global PDF renderer function, which is now responsible for the UI
+        if (window.renderPdfInCanvas) {
+            window.renderPdfInCanvas(item.dataUrl);
+        } else {
+            console.error("PDF renderer function not found. Make sure app.js is loaded.");
+            // Fallback for safety, though it might not work on mobile
+            window.open(item.dataUrl, '_blank');
         }
-        
-        modalImg.style.display = 'none';
-        modalDocContent.style.display = 'block';
-        modalDocContent.innerHTML = `<iframe src="${item.dataUrl}" style="width:100%;height:100%;border:0;" title="${escapeHTML(item.name)}"></iframe>`;
-        modal.style.display = 'block';
     };
     actionsDiv.appendChild(previewButton);
 

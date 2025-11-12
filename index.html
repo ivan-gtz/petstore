@@ -9,6 +9,7 @@
     <link rel="icon" href="/image/img2.jpeg" type="image/png">
     <!-- PWA Manifest for Installability -->
     <link rel="manifest" href="/manifest.json">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
 </head>
 <body>
 
@@ -666,6 +667,14 @@
                 <button class="confirm-no save-btn" type="button">Cancelar</button>
                 <button class="confirm-yes save-btn danger-btn" type="button">Eliminar</button>
             </div>
+        </div>
+    </div>
+
+    <!-- PDF Viewer Container -->
+    <div id="pdf-viewer-container" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); z-index: 1001; overflow-y: auto; padding: 20px;">
+        <button id="close-pdf-viewer" style="position: fixed; top: 15px; right: 25px; font-size: 2rem; color: white; background: none; border: none; cursor: pointer;">&times;</button>
+        <div id="pdf-pages" style="max-width: 800px; margin: 40px auto 0;">
+            <!-- Canvas elements for each page will be appended here by JS -->
         </div>
     </div>
 
