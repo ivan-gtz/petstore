@@ -148,7 +148,7 @@ body {
     transition: transform 0.25s ease;
 }
 /* Assign animal emoji per section for a friendly look */
-.sidebar nav a[data-target="panel-section"] .menu-text::before { content: "🐾"; }
+/*.sidebar nav a[data-target="panel-section"] .menu-text::before { content: "🐾"; }
 .sidebar nav a[data-target="pets-section"] .menu-text::before { content: "🐶"; }
 .sidebar nav a[data-target="clients-section"] .menu-text::before { content: "🐕"; }
 .sidebar nav a[data-target="gallery-section"] .menu-text::before { content: "📸"; }
@@ -159,7 +159,7 @@ body {
 .sidebar nav a[data-target="control-section"] .menu-text::before { content: "🧾"; }
 .sidebar nav a[data-target="logout"] .menu-text::before { content: "↪︎"; }
 .sidebar nav a[data-target="settings-section"] .menu-text::before { content: "⚙️"; }
-
+*/
 .menu-icon {
     width: 24px;
     height: 24px;
