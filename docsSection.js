@@ -35,7 +35,8 @@ async function getEffectiveDocLimit(userId) {
     }
 
     const userRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userRef);
+    // Force a server read to bypass the cache and get the latest limits
+    const userSnap = await getDoc(userRef, { source: 'server' });
     const userData = userSnap.exists() ? userSnap.data() : {};
 
     return userData.docLimit ?? globalLimits.docLimit;

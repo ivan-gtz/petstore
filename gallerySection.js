@@ -1,7 +1,7 @@
 // --- Galería Section Logic ---
 import { getLoginState } from './loginHandler.js';
 import { db } from './firebase-init.js';
-import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
 const FALLBACK_GALLERY_LIMIT = 15;
 const MAX_IMAGE_SIZE_BYTES = 1 * 1024 * 1024; // 1MB
@@ -34,7 +34,8 @@ async function getEffectiveGalleryLimit(userId) {
     }
 
     const userRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userRef);
+    // Force a server read to bypass the cache and get the latest limits
+    const userSnap = await getDoc(userRef, { source: 'server' });
     const userData = userSnap.exists() ? userSnap.data() : {};
 
     return userData.galleryLimit ?? globalLimits.galleryLimit;
@@ -123,7 +124,7 @@ export function initGallerySection() {
             galleryPreviewsDiv.appendChild(placeholder);
 
             const reader = new FileReader();
-            reader.onload = (e) => processAndUploadImage(e.target.result, file, currentUser.uid, effectiveLimit, placeholderId);
+            reader.onload = (e) => processAndUploadImage(e.target.result, file, currentUser.uid, placeholderId);
             reader.readAsDataURL(file);
         }
         galleryUploadInput.value = '';
@@ -131,7 +132,7 @@ export function initGallerySection() {
     console.log('Gallery upload input listener initialized with placeholder logic.');
 }
 
-async function processAndUploadImage(dataUrl, file, userId, limit, placeholderId) {
+async function processAndUploadImage(dataUrl, file, userId, placeholderId) {
     const placeholder = document.getElementById(placeholderId);
     try {
         const img = new Image();
@@ -159,19 +160,34 @@ async function processAndUploadImage(dataUrl, file, userId, limit, placeholderId
         ctx.drawImage(img, 0, 0, width, height);
         const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
-        const item = { name: file.name, type: 'image/jpeg', dataUrl: compressedDataUrl };
+        const item = { 
+            id: `img_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+            name: file.name, 
+            type: 'image/jpeg', 
+            dataUrl: compressedDataUrl 
+        };
         const galleryDocRef = doc(db, "galleries", userId);
 
-        const docSnap = await getDoc(galleryDocRef);
-        if (docSnap.exists()) {
+        // Use a transaction to atomically update the document
+        await runTransaction(db, async (transaction) => {
+            const limit = await getEffectiveGalleryLimit(userId);
+            const docSnap = await transaction.get(galleryDocRef);
+
+            if (!docSnap.exists()) {
+                transaction.set(galleryDocRef, { images: [item] });
+                return;
+            }
+
             const existingImages = docSnap.data().images || [];
             if (existingImages.length >= limit) {
-                throw new Error("Limit exceeded just before final write.");
+                // We throw an error here to abort the transaction.
+                // This will be caught by the outer catch block.
+                throw new Error("Limit exceeded");
             }
-            await updateDoc(galleryDocRef, { images: arrayUnion(item) });
-        } else {
-            await setDoc(galleryDocRef, { images: [item] });
-        }
+
+            const newImages = [...existingImages, item];
+            transaction.update(galleryDocRef, { images: newImages });
+        });
 
         console.log(`Gallery item saved for user "${userId}"`);
         
@@ -231,12 +247,22 @@ function displayGalleryItem(userId, item) {
     deleteButton.textContent = 'Eliminar';
     deleteButton.onclick = async (e) => {
         e.stopPropagation();
-        const confirmed = await window.showConfirmDialog('Eliminar Imagen', `¿Eliminar "${item.name}"?`, { danger: true });
+        const confirmed = await window.showConfirmDialog('Eliminar Imagen', `¿Eliminar "${escapeHTML(item.name)}"?`, { danger: true });
         if (!confirmed) return;
         
         const galleryDocRef = doc(db, "galleries", userId);
         try {
-            await updateDoc(galleryDocRef, { images: arrayRemove(item) });
+            await runTransaction(db, async (transaction) => {
+                const docSnap = await transaction.get(galleryDocRef);
+                if (!docSnap.exists()) {
+                    return; // Nothing to delete
+                }
+                const allImages = docSnap.data().images || [];
+                // Filter out the image with the specific ID
+                const newImages = allImages.filter(img => img.id !== item.id);
+                transaction.update(galleryDocRef, { images: newImages });
+            });
+
             imgContainer.remove();
             updateGalleryCountMessage(userId);
         } catch (err) {
