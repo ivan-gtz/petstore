@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from "https:/
 import { getLoginState } from './loginHandler.js';
 
 const FALLBACK_DOC_LIMIT = 10;
+const MAX_DOC_SIZE_BYTES = 1 * 1024 * 1024; // 1MB
 
 // Helper function to escape HTML for safe display
 function escapeHTML(str) {
@@ -24,6 +25,20 @@ async function getGlobalLimits() {
     }
     // Return just the fallback if the document doesn't exist or limit is not a number
     return { docLimit: FALLBACK_DOC_LIMIT };
+}
+
+// Fetches the effective document limit for a given user, falling back to global if not set
+async function getEffectiveDocLimit(userId) {
+    const globalLimits = await getGlobalLimits();
+    if (!userId) {
+        return globalLimits.docLimit;
+    }
+
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+    const userData = userSnap.exists() ? userSnap.data() : {};
+
+    return userData.docLimit ?? globalLimits.docLimit;
 }
 
 export function initDocsSection() {
@@ -49,8 +64,7 @@ export function initDocsSection() {
         const docSnap = await getDoc(docRef);
         const currentDocs = docSnap.exists() ? docSnap.data().docs || [] : [];
         
-        const limits = await getGlobalLimits();
-        const effectiveLimit = limits.docLimit;
+        const effectiveLimit = await getEffectiveDocLimit(currentUser.uid);
         const availableSlots = effectiveLimit - currentDocs.length;
 
         if (files.length > availableSlots) {
@@ -62,6 +76,11 @@ export function initDocsSection() {
         for (const file of files) {
             if (file.type !== 'application/pdf') {
                 alert(`Error: "${file.name}" no es un archivo PDF y fue omitido.`);
+                continue;
+            }
+
+            if (file.size > MAX_DOC_SIZE_BYTES) {
+                alert(`Error: "${file.name}" (${(file.size / (1024 * 1024)).toFixed(2)} MB) excede el tamaño máximo permitido de 1 MB y fue omitido.`);
                 continue;
             }
 
@@ -216,8 +235,7 @@ async function updateDocsCountMessage(userId) {
     const docSnap = await getDoc(docRef);
     const count = docSnap.exists() ? (docSnap.data().docs || []).length : 0;
     
-    const limits = await getGlobalLimits();
-    const effectiveLimit = limits.docLimit;
+    const effectiveLimit = await getEffectiveDocLimit(userId);
     const remaining = effectiveLimit - count;
 
     if (count >= effectiveLimit) {

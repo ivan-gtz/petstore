@@ -1,7 +1,7 @@
 // Control Section - Admin can change global upload limits and inspect per-user usage
 import { isAdmin, getLoginState } from './loginHandler.js';
 import { db } from './firebase-init.js';
-import { collection, getDocs, doc, getDoc, setDoc, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { collection, getDocs, doc, getDoc, setDoc, updateDoc, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
 const FALLBACK_LIMITS = { docLimit: 10, galleryLimit: 15 };
 
@@ -86,6 +86,7 @@ export function initControlSection() {
 
     // Update selected user's usage and show their specific limits
     async function updateSelectedUserUsage(userId) {
+        console.log(`Updating view for user ID: ${userId || 'Global'}`);
         const globalLimits = await getGlobalLimits();
         
         if (!userId) { // Global view
@@ -93,6 +94,7 @@ export function initControlSection() {
             docsCountP.textContent = 'Documentos: N/A (Global)';
             galleryInput.value = globalLimits.galleryLimit;
             docsInput.value = globalLimits.docLimit;
+            console.log('Showing global limits.', globalLimits);
             return;
         }
 
@@ -110,6 +112,13 @@ export function initControlSection() {
         const userGalleryLimit = userData.galleryLimit ?? globalLimits.galleryLimit;
         galleryCountP.innerHTML = `Fotos: <b>${galleryCount}</b> / ${userGalleryLimit}`;
         galleryInput.value = userGalleryLimit;
+
+        console.log('Showing limits for selected user:', {
+            userId,
+            userData,
+            finalDocLimit: userDocLimit,
+            finalGalleryLimit: userGalleryLimit
+        });
     }
 
     userSelect.addEventListener('change', () => updateSelectedUserUsage(userSelect.value));
@@ -135,10 +144,27 @@ export function initControlSection() {
                 await updateDoc(userRef, { galleryLimit, docLimit });
                 successMsg.textContent = `Límites guardados para el usuario.`;
             } else {
-                // Save global limits
+                // Save global limits and overwrite all individual user limits
+                const newLimits = { galleryLimit, docLimit };
+
+                // 1. Update the global settings document
                 const settingsRef = doc(db, "settings", "globalLimits");
-                await setDoc(settingsRef, { galleryLimit, docLimit }, { merge: true });
-                successMsg.textContent = `Límites globales guardados.`;
+                await setDoc(settingsRef, newLimits, { merge: true });
+
+                // 2. Overwrite all individual user limits
+                const usersCollection = collection(db, "users");
+                const usersSnapshot = await getDocs(usersCollection);
+                const batch = writeBatch(db);
+                usersSnapshot.forEach(userDoc => {
+                    const userRef = doc(db, "users", userDoc.id);
+                    batch.update(userRef, {
+                        galleryLimit: newLimits.galleryLimit,
+                        docLimit: newLimits.docLimit
+                    });
+                });
+                await batch.commit();
+                
+                successMsg.textContent = `Límites globales guardados y aplicados a todos los usuarios.`;
             }
             successMsg.style.display = 'block';
             errorMsg.style.display = 'none';

@@ -4,6 +4,7 @@ import { db } from './firebase-init.js';
 import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
 const FALLBACK_GALLERY_LIMIT = 15;
+const MAX_IMAGE_SIZE_BYTES = 1 * 1024 * 1024; // 1MB
 
 // Helper function to escape HTML for safe display
 function escapeHTML(str) {
@@ -23,6 +24,20 @@ async function getGlobalLimits() {
         return { galleryLimit: settingsSnap.data().galleryLimit };
     }
     return { galleryLimit: FALLBACK_GALLERY_LIMIT };
+}
+
+// Fetches the effective gallery limit for a given user, falling back to global if not set
+async function getEffectiveGalleryLimit(userId) {
+    const globalLimits = await getGlobalLimits();
+    if (!userId) {
+        return globalLimits.galleryLimit;
+    }
+
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+    const userData = userSnap.exists() ? userSnap.data() : {};
+
+    return userData.galleryLimit ?? globalLimits.galleryLimit;
 }
 
 // --- UI Helper Functions ---
@@ -71,8 +86,7 @@ export function initGallerySection() {
         const galleryDocSnap = await getDoc(galleryDocRef);
         const currentItems = galleryDocSnap.exists() ? galleryDocSnap.data().images || [] : [];
         
-        const limits = await getGlobalLimits();
-        const effectiveLimit = limits.galleryLimit;
+        const effectiveLimit = await getEffectiveGalleryLimit(currentUser.uid);
         const availableSlots = effectiveLimit - currentItems.length;
 
         if (files.length > availableSlots) {
@@ -84,6 +98,11 @@ export function initGallerySection() {
         for (const file of files) {
             if (!file.type.startsWith('image/')) {
                 alert(`Error: "${file.name}" no es una imagen válida y fue omitido.`);
+                continue;
+            }
+
+            if (file.size > MAX_IMAGE_SIZE_BYTES) {
+                alert(`Error: "${file.name}" (${(file.size / (1024 * 1024)).toFixed(2)} MB) excede el tamaño máximo permitido de 1 MB y fue omitido.`);
                 continue;
             }
 
@@ -264,8 +283,7 @@ export async function updateGalleryCountMessage(userId) {
     const galleryDocSnap = await getDoc(galleryDocRef);
     const count = galleryDocSnap.exists() ? (galleryDocSnap.data().images || []).length : 0;
     
-    const limits = await getGlobalLimits();
-    const effectiveLimit = limits.galleryLimit;
+    const effectiveLimit = await getEffectiveGalleryLimit(userId);
     const remaining = effectiveLimit - count;
 
     if (count >= effectiveLimit) {
